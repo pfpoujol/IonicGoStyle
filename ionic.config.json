@@ -1,7 +1,8 @@
 {
   "name": "IonicGoStyle",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {},
+    "cordova": {}
   },
   "type": "angular"
 }

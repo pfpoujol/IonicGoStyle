@@ -3,7 +3,16 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  firebase: {
+    apiKey: 'AIzaSyAqam_JvXms03BVOVLuaX1yW9mdNcUA68c',
+    authDomain: 'mspr-gostyleapp.firebaseapp.com',
+    databaseURL: 'https://mspr-gostyleapp.firebaseio.com',
+    projectId: 'mspr-gostyleapp',
+    storageBucket: 'mspr-gostyleapp.appspot.com',
+    messagingSenderId: '983941306670',
+    appId: '1:983941306670:web:e0d8bd95875cdf2b9742bf'
+  }
 };
 
 /*
