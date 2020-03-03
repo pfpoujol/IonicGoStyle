@@ -1,0 +1,7 @@
+{
+  "name": "IonicGoStyle",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
