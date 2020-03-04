@@ -5,18 +5,53 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { HomePage } from './home.page';
+import {HomePageRoutingModule} from './home-routing.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    RouterModule.forChild([
+    HomePageRoutingModule
+      /*RouterModule.forChild([
+      {
+        component: HomePage,
+        children:
+          [
+            {
+              path: 'tab-list-promos',
+              children:
+                [
+                  {
+                    path: '',
+                    loadChildren: '../tab-list-promos/tab-list-promos.module#TabListPromosPageModule'
+                  }
+                ]
+            },
+            {
+              path: 'tab-barcode-scanner',
+              children:
+                [
+                  {
+                    path: '',
+                    loadChildren: '/tab-barcode-scanner/tab-barcode-scanner.module#TabBarcodeScannerPageModule'
+                  }
+                ]
+            },
+            {
+              path: '',
+              redirectTo: '/tab-list-promos',
+              pathMatch: 'full'
+            }
+          ]
+      },
       {
         path: '',
-        component: HomePage
+        redirectTo: '/tab-list-promos',
+        pathMatch: 'full'
       }
     ])
+  ],*/
   ],
   declarations: [HomePage]
 })
