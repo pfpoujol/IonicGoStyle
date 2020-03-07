@@ -1,3 +1,16 @@
 <ion-content>
+    <h1>Click Button To Scan</h1>
 
+    <ion-button (click)="scanCode()">
+        Scan Code
+    </ion-button>
+
+    <div *ngIf="scannedData">
+        <p>
+            Scanned Code Text : <b>{{ scannedData["text"] }}</b>
+        </p>
+        <p>
+            Scanned Code Format : <b>{{ scannedData["format"] }}</b>
+        </p>
+    </div>
 </ion-content>

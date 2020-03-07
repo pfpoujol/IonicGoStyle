@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { TabBarcodeScannerPageRoutingModule } from './tab-barcode-scanner-routing.module';
 
 import { TabBarcodeScannerPage } from './tab-barcode-scanner.page';
+import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 
 @NgModule({
   imports: [
@@ -15,6 +16,7 @@ import { TabBarcodeScannerPage } from './tab-barcode-scanner.page';
     IonicModule,
     TabBarcodeScannerPageRoutingModule
   ],
-  declarations: [TabBarcodeScannerPage]
+  declarations: [TabBarcodeScannerPage],
+  providers: [BarcodeScanner]
 })
 export class TabBarcodeScannerPageModule {}
