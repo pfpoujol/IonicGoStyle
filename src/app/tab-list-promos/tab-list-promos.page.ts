@@ -81,16 +81,16 @@ export class TabListPromosPage implements OnInit, OnDestroy {
             .then(barcodeData => {
                 if (barcodeData.format === 'QR_CODE') {
                     this.getScannedPromo(barcodeData.text);
-                    alert(barcodeData.text);
+                } else {
+                    alert('Désolé, je ne scanne que les QR codes.');
                 }
             })
             .catch(err => {
                 console.log('Error', err);
                 // TODO: remove
                 // this.getScannedPromo('EXISTEPAS');
-                // this.getScannedPromo('EXPIRED');
+                this.getScannedPromo('EXPIRED');
                 // this.getScannedPromo('KADO20');
-                this.getScannedPromo('test');
             });
     }
 
@@ -107,21 +107,17 @@ export class TabListPromosPage implements OnInit, OnDestroy {
                     dateExpiration: snapshot.data().dateExpiration.toDate(),
                     description: snapshot.data().description
                 } as Promotion;
-            } else {
-                console.log(snapshot.data());
             }
             return snapshot.ref;
         }).then(promoRef => {
             if (promoRef) {
                 if (!Object.keys(this.mapPromos).includes(promoRef.id)) {
-                    console.log('TODO : ajouter le qr');
-                    console.log(promoRef);
                     this.addScannedPromo(promoRef);
                 } else {
-                    console.log('qr code déja scanné');
+                    alert('QR code déjà scanné');
                 }
             } else {
-                console.log('promo expirée ou non trouvée');
+                alert('Promo expirée ou non trouvée');
             }
         });
     }
