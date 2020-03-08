@@ -4,5 +4,4 @@ export interface User {
     uid: string;
     name: string;
     firstname: string;
-    ownedPromos: Array<{promoRef: DocumentReference, used: boolean}>;
 }

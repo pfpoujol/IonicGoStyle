@@ -21,10 +21,10 @@ export class AuthService {
   get isEmailVerified(): boolean {
     return this.isAuthenticated ? this.authState.emailVerified : false;
   }
-  get currentUserId(): string {
+  get userId(): string {
     return this.isAuthenticated ? this.authState.uid : null;
   }
-  get userData(): any {
+  get userAuthData(): any {
     if ( !this.isAuthenticated ) {
       return [];
     }

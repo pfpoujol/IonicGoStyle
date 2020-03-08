@@ -1,5 +1,5 @@
 export interface Promotion {
     code: string;
-    date: {creation: Date, expiration: Date};
+    dateExpiration: Date;
     description: string;
 }

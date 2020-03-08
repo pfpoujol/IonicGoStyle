@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { TabListPromosPageRoutingModule } from './tab-list-promos-routing.module';
 
 import { TabListPromosPage } from './tab-list-promos.page';
+import {BarcodeScanner} from '@ionic-native/barcode-scanner/ngx';
 
 @NgModule({
   imports: [
@@ -15,6 +16,7 @@ import { TabListPromosPage } from './tab-list-promos.page';
     IonicModule,
     TabListPromosPageRoutingModule
   ],
-  declarations: [TabListPromosPage]
+  declarations: [TabListPromosPage],
+  providers: [BarcodeScanner]
 })
 export class TabListPromosPageModule {}
