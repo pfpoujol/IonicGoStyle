@@ -127,10 +127,9 @@ export class TabListPromosPage implements OnInit, OnDestroy {
     }
 
     /**
-     * TODO: Ajout de la promotion à l'utilisateur, en tant qu'attribut supplémentaire de l'objet ownedPromos (data type Map)
+     * Ajout de la promotion à l'utilisateur, en tant qu'attribut supplémentaire de l'objet ownedPromos (data type Map)
      */
     addScannedPromo(ref: DocumentReference) {
-
         const arr = Object.keys(this.mapPromos).map(key => {
             return [this.mapPromos[key].range];
             // @ts-ignore
