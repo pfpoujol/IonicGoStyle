@@ -14,6 +14,9 @@ import { TabListPromosPage } from './tab-list-promos.page';
     FormsModule,
     IonicModule,
     TabListPromosPageRoutingModule
+  ], 
+  providers: [
+    Clipboard
   ],
   declarations: [TabListPromosPage]
 })

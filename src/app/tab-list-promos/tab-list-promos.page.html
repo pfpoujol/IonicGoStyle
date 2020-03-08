@@ -10,7 +10,7 @@
 </ion-header>
 
 <ion-content>
-<!-- List of Input Items -->
+<!-- List des codes promo d'un utisateur -->
 <ion-list>
   <ion-item-sliding>
   <ion-item>
@@ -21,118 +21,23 @@
     </ion-label>
     <ion-icon name="swap-horizontal-outline"></ion-icon>
   </ion-item>  
-  <ion-item-options side="end">
-    <ion-item-option (click)="unread(item)">Unread</ion-item-option>
-    <ion-item-option (click)="unread(item)"> <ion-icon name="copy-outline"></ion-icon></ion-item-option>
+<ion-item-options side="end">
+      <!-- <ion-item-option (click)="unread(item)">Unread</ion-item-option>
+    <ion-item-option (click)="copyText(item)"> <ion-icon name="copy-outline"></ion-icon></ion-item-option>-->
   </ion-item-options>
 </ion-item-sliding>
 <ion-item-sliding>
   <ion-item>
     <ion-label>
       <h2>30% de réduction sur Sneakers Adidas</h2>
-      <p>SUPER50
+      <p [(ngModel)]="CopyTextAreaText">SUPER50
         <br>Date limite : 09/03/2020</p>
     </ion-label>
     <ion-icon name="swap-horizontal-outline"></ion-icon>
   </ion-item> 
-  <ion-item-options side="end">
-    <ion-item-option (click)="unread(item)">Unread</ion-item-option>
-    <ion-item-option (click)="unread(item)"> <ion-icon name="copy-outline"></ion-icon></ion-item-option>
-  </ion-item-options>
-</ion-item-sliding>
-<ion-item-sliding>
-  <ion-item>
-    <ion-label>
-      <h2>35% de réduction sur Sweat Nike</h2>
-      <p>REDUC60
-      <br>Date limite : 16/04/2020</p>
-    </ion-label>
-    <ion-icon name="swap-horizontal-outline"></ion-icon>
-  </ion-item>  
-  <ion-item-options side="end">
-    <ion-item-option (click)="unread(item)">Unread</ion-item-option>
-    <ion-item-option (click)="unread(item)"> <ion-icon name="copy-outline"></ion-icon></ion-item-option>
-  </ion-item-options>
-</ion-item-sliding>
-<ion-item-sliding>
-  <ion-item>
-    <ion-label>
-      <h2>20% de réduction sur Jean Levi's</h2>
-      <p>KADO20
-      <br>Date limite : 07/03/2020</p>
-    </ion-label>
-    <ion-icon name="swap-horizontal-outline"></ion-icon>
-  </ion-item>  
-  <ion-item-options side="end">
-    <ion-item-option (click)="unread(item)">Unread</ion-item-option>
-    <ion-item-option (click)="unread(item)"> <ion-icon name="copy-outline"></ion-icon></ion-item-option>
-  </ion-item-options>
-</ion-item-sliding>
-<ion-item-sliding>
-  <ion-item>
-    <ion-label>
-      <h2>30% de réduction sur Sneakers Adidas</h2>
-      <p>SUPER50
-        <br>Date limite : 09/03/2020</p>
-    </ion-label>
-    <ion-icon name="copy-outline"></ion-icon>
-  </ion-item> 
-  <ion-item-options side="end">
-    <ion-item-option (click)="unread(item)">Unread</ion-item-option>
-  </ion-item-options>
-</ion-item-sliding>
-<ion-item-sliding>
-  <ion-item>
-    <ion-label>
-      <h2>35% de réduction sur Sweat Nike</h2>
-      <p>REDUC60
-      <br>Date limite : 16/04/2020</p>
-    </ion-label>
-    <ion-icon name="swap-horizontal-outline"></ion-icon>
-  </ion-item>  
-  <ion-item-options side="end">
-    <ion-item-option (click)="unread(item)">Unread</ion-item-option>
-    <ion-item-option (click)="unread(item)"> <ion-icon name="copy-outline"></ion-icon></ion-item-option>
-  </ion-item-options>
-</ion-item-sliding>  <ion-item-sliding>
-  <ion-item>
-    <ion-label>
-      <h2>20% de réduction sur Jean Levi's</h2>
-      <p>KADO20
-      <br>Date limite : 07/03/2020</p>
-    </ion-label>
-    <ion-icon name="swap-horizontal-outline"></ion-icon>
-  </ion-item>  
-  <ion-item-options side="end">
-    <ion-item-option (click)="unread(item)">Unread</ion-item-option>
-    <ion-item-option (click)="unread(item)"> <ion-icon name="copy-outline"></ion-icon></ion-item-option>
-  </ion-item-options>
-</ion-item-sliding>
-<ion-item-sliding>
-  <ion-item>
-    <ion-label>
-      <h2>30% de réduction sur Sneakers Adidas</h2>
-      <p>SUPER50
-        <br>Date limite : 09/03/2020</p>
-    </ion-label>
-    <ion-icon name="copy-outline"></ion-icon>
-  </ion-item> 
-  <ion-item-options side="end">
-    <ion-item-option (click)="unread(item)">Unread</ion-item-option>
-  </ion-item-options>
-</ion-item-sliding>
-<ion-item-sliding>
-  <ion-item>
-    <ion-label>
-      <h2>35% de réduction sur Sweat Nike</h2>
-      <p>REDUC60
-      <br>Date limite : 16/04/2020</p>
-    </ion-label>
-    <ion-icon name="swap-horizontal-outline"></ion-icon>
-  </ion-item>  
-  <ion-item-options side="end">
-    <ion-item-option (click)="unread(item)">Unread</ion-item-option>
-    <ion-item-option (click)="unread(item)"> <ion-icon name="copy-outline"></ion-icon></ion-item-option>
+ <ion-item-options side="end">
+      <!--<ion-item-option (click)="unread(item)">Unread</ion-item-option>
+    <ion-item-option (click)="copyText(item)"> <ion-icon name="copy-outline"></ion-icon></ion-item-option>-->
   </ion-item-options>
 </ion-item-sliding>
 </ion-list>
