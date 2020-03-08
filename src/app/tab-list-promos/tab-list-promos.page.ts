@@ -5,8 +5,8 @@ import {PromosService} from '../services/promos.service';
 import {Promotion} from '../models/Promotion';
 import {User} from '../models/User';
 import {UserFirestore} from '../models/firestore/UserFirestore';
-import {AngularFirestore, DocumentChangeAction, DocumentSnapshot} from '@angular/fire/firestore';
-import {map, take} from 'rxjs/operators';
+import {AngularFirestore, DocumentSnapshot} from '@angular/fire/firestore';
+import {map} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
 
 
@@ -30,25 +30,13 @@ export class TabListPromosPage implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.getPromos();
-        // this.loadPromos();
-        const timerid = setTimeout(() => {
-            // console.log(this.promos);
-        }, 5000);
     }
 
-    /*    getAllPromos(): void {
-            this.promosService.getPromos().subscribe(data => {
-                this.promos = data.map(e => {
-                    return {
-                        code: e.payload.doc.id,
-                        ...e.payload.doc.data()
-                    } as Promotion;
-                });
-            });
-        }*/
-
+    /**
+     * Obtention de la liste des promotions de l'utilisateur ordonnée par date d'expiration
+     */
     getPromos() {
-        const subscription1 = this.afs.doc<UserFirestore>('users/goEdwr6nOpN0oyiAGWvs9vFWaSj1').valueChanges().subscribe(action => {
+        const subscription1 = this.afs.doc<UserFirestore>('users/' + this.userId).valueChanges().subscribe(action => {
             this.mapPromos = action.ownedPromos;
             const subscription2 = this.promosService.getPromos(Object.keys(action.ownedPromos)).pipe(
                 map(actions => actions.map(a => {
@@ -58,25 +46,26 @@ export class TabListPromosPage implements OnInit, OnDestroy {
                         description: a.payload.doc.data().description
                     };
                 }))
-            ).subscribe(promo => console.log(promo));
+            ).subscribe(promos => {
+                this.promos = promos;
+            });
             this.addToSubsciption(subscription2);
         });
         this.addToSubsciption(subscription1);
     }
 
+    /**
+     * Obtention des infos de l'utilisateur depuis Firebase Authentification + Cloud FireStore
+     */
     getUser() {
-        this.afs.doc('users/goEdwr6nOpN0oyiAGWvs9vFWaSj1').ref.get().then((snapshot: DocumentSnapshot<UserFirestore>) => {
+        this.afs.doc('users/' + this.userId).ref.get().then((snapshot: DocumentSnapshot<UserFirestore>) => {
             this.user = {
-                uid: 'goEdwr6nOpN0oyiAGWvs9vFWaSj1',
+                uid: this.userId,
                 name: snapshot.data().name,
                 firstname: snapshot.data().firstname
+                // TODO: fusionner avec les infos d'authentification
             } as User;
         });
-    }
-
-    logout() {
-        this.authService.doLogout();
-        this.router.navigate(['login']);
     }
 
     addToSubsciption(newSubsciption) {
@@ -85,5 +74,10 @@ export class TabListPromosPage implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.subscriptions.unsubscribe();
+    }
+
+    logout() {
+        this.authService.doLogout();
+        this.router.navigate(['login']);
     }
 }
