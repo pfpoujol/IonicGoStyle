@@ -19,6 +19,10 @@ export class PromosService {
   getPromo(codePromo: string): DocumentReference {
     return this.firestore.collection('promotions').doc(codePromo).ref;
   }
+
+  /**
+   * TODO: Ordonner par user range
+   */
   getPromos(array: Array<string>): Observable<DocumentChangeAction<PromotionFirestore>[]> {
     // const arrayPromoRef = array.map(strId => this.firestore.doc('promotions/' + strId).ref);
     return (array.length === 0 ? undefined :

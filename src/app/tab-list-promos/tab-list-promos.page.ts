@@ -5,9 +5,12 @@ import {PromosService} from '../services/promos.service';
 import {Promotion} from '../models/Promotion';
 import {User} from '../models/User';
 import {UserFirestore} from '../models/firestore/UserFirestore';
-import {AngularFirestore, DocumentSnapshot} from '@angular/fire/firestore';
+import {AngularFirestore, DocumentReference, DocumentSnapshot} from '@angular/fire/firestore';
 import {map} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
+import {BarcodeScanner} from '@ionic-native/barcode-scanner/ngx';
+import * as moment from 'moment';
+import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
 
 
 @Component({
@@ -25,6 +28,7 @@ export class TabListPromosPage implements OnInit, OnDestroy {
     constructor(private afs: AngularFirestore,
                 private authService: AuthService,
                 private promosService: PromosService,
+                private barcodeScanner: BarcodeScanner,
                 private router: Router) {
     }
 
@@ -68,6 +72,65 @@ export class TabListPromosPage implements OnInit, OnDestroy {
         });
     }
 
+    scanCode() {
+        // this.getScannedPromo('EXISTEPAS');
+        // this.getScannedPromo('EXPIRED');
+        // this.getScannedPromo('KADO20');
+        this.barcodeScanner
+            .scan()
+            .then(barcodeData => {
+                if ( barcodeData.format === 'QR_CODE' ) {
+                    this.getScannedPromo(barcodeData.text);
+                    alert(barcodeData.text);
+                }
+            })
+            .catch(err => {
+                console.log('Error', err);
+                // TODO: remove
+                // this.getScannedPromo('EXISTEPAS');
+                // this.getScannedPromo('EXPIRED');
+                // this.getScannedPromo('KADO20');
+                this.getScannedPromo('test');
+            });
+    }
+
+    /**
+     * recupère le text du qrcode, vérifie s'il exite en bdd, s'il n'est pas expiré et s'il n'a pas déjà été scanné par l'utilisateur.
+     * Si c'est OK, appel la fonction suivante addScannedPromo()
+     */
+    getScannedPromo(txtCode: string) {
+        this.promosService.getPromo(txtCode).get().then((snapshot: DocumentSnapshot<PromotionFirestore>) => {
+            let newPromo;
+            if (snapshot.exists && moment(snapshot.data().dateExpiration.toDate()).isAfter()) {
+                newPromo = {
+                    code: snapshot.id,
+                    dateExpiration: snapshot.data().dateExpiration.toDate(),
+                    description: snapshot.data().description
+                } as Promotion;
+            } else {
+                console.log(snapshot.data());
+            }
+            return snapshot.ref;
+        }).then(promoRef => {
+            if (promoRef) {
+                if (!Object.keys(this.mapPromos).includes(promoRef.id)) {
+                    console.log('TODO : ajouter le qr');
+                    this.addScannedPromo(promoRef);
+                } else {
+                    console.log('qr code déja scanné');
+                }
+            } else {
+                console.log('promo expirée ou non trouvée');
+            }
+        });
+    }
+
+    /**
+     * TODO: Ajout de la promotion à l'utilisateur, en tant qu'attribut supplémentaire de l'objet ownedPromos (data type Map)
+     */
+    addScannedPromo(ref: DocumentReference) {
+        // this.afs.doc<UserFirestore>('users/' + this.userId).update({})
+    }
     addToSubsciption(newSubsciption) {
         this.subscriptions ? this.subscriptions.add(newSubsciption) : this.subscriptions = newSubsciption;
     }
