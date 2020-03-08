@@ -20,7 +20,7 @@ import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
 })
 export class TabListPromosPage implements OnInit, OnDestroy {
     promos: Array<Promotion>;
-    mapPromos: {};
+    mapPromos: { unknown: { range: number, used: boolean }};
     user: User;
     userId = 'goEdwr6nOpN0oyiAGWvs9vFWaSj1';
     subscriptions: Subscription;
@@ -79,7 +79,7 @@ export class TabListPromosPage implements OnInit, OnDestroy {
         this.barcodeScanner
             .scan()
             .then(barcodeData => {
-                if ( barcodeData.format === 'QR_CODE' ) {
+                if (barcodeData.format === 'QR_CODE') {
                     this.getScannedPromo(barcodeData.text);
                     alert(barcodeData.text);
                 }
@@ -115,6 +115,7 @@ export class TabListPromosPage implements OnInit, OnDestroy {
             if (promoRef) {
                 if (!Object.keys(this.mapPromos).includes(promoRef.id)) {
                     console.log('TODO : ajouter le qr');
+                    console.log(promoRef);
                     this.addScannedPromo(promoRef);
                 } else {
                     console.log('qr code déja scanné');
@@ -129,8 +130,17 @@ export class TabListPromosPage implements OnInit, OnDestroy {
      * TODO: Ajout de la promotion à l'utilisateur, en tant qu'attribut supplémentaire de l'objet ownedPromos (data type Map)
      */
     addScannedPromo(ref: DocumentReference) {
-        // this.afs.doc<UserFirestore>('users/' + this.userId).update({})
+
+        const arr = Object.keys(this.mapPromos).map(key => {
+            return [this.mapPromos[key].range];
+            // @ts-ignore
+        }).flat();
+        const range = Math.max(...arr) + 1;
+        this.afs.doc<UserFirestore>('users/' + this.userId).set({
+            ownedPromos: {[ref.id]: {range, used: false}}
+        } as UserFirestore, { merge: true });
     }
+
     addToSubsciption(newSubsciption) {
         this.subscriptions ? this.subscriptions.add(newSubsciption) : this.subscriptions = newSubsciption;
     }
