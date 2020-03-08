@@ -83,7 +83,7 @@ export class TabListPromosPage implements OnInit, OnDestroy {
         this.subscriptions ? this.subscriptions.add(newSubsciption) : this.subscriptions = newSubsciption;
     }
 
-    OnDestroy() {
+    ngOnDestroy() {
         this.subscriptions.unsubscribe();
     }
 }
