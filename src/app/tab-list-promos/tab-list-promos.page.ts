@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {AuthService} from '../services/auth.service';
+import {AuthService} from '../auth.service';
 import {Router} from '@angular/router';
 import {PromosService} from '../services/promos.service';
 import {Promotion} from '../models/Promotion';
@@ -73,9 +73,6 @@ export class TabListPromosPage implements OnInit, OnDestroy {
     }
 
     scanCode() {
-        // this.getScannedPromo('EXISTEPAS');
-        // this.getScannedPromo('EXPIRED');
-        // this.getScannedPromo('KADO20');
         this.barcodeScanner
             .scan()
             .then(barcodeData => {
@@ -87,10 +84,6 @@ export class TabListPromosPage implements OnInit, OnDestroy {
             })
             .catch(err => {
                 console.log('Error', err);
-                // TODO: remove
-                // this.getScannedPromo('EXISTEPAS');
-                this.getScannedPromo('EXPIRED');
-                // this.getScannedPromo('KADO20');
             });
     }
 
@@ -114,10 +107,10 @@ export class TabListPromosPage implements OnInit, OnDestroy {
                 if (!Object.keys(this.mapPromos).includes(promoRef.id)) {
                     this.addScannedPromo(promoRef);
                 } else {
-                    alert('QR code déjà scanné');
+                    alert('Ce QR code a déjà été scanné');
                 }
             } else {
-                alert('Promo expirée ou non trouvée');
+                alert('La promo a expirée ou n\'existe pas.');
             }
         });
     }
