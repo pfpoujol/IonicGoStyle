@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {AuthService} from '../auth.service';
+import {AuthService} from '../services/auth.service';
 import {Router} from '@angular/router';
 import {PromosService} from '../services/promos.service';
 import {Promotion} from '../models/Promotion';
@@ -20,7 +20,7 @@ import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
 })
 export class TabListPromosPage implements OnInit, OnDestroy {
     promos: Array<Promotion>;
-    mapPromos: { unknown: { range: number, used: boolean }};
+    mapPromos: { [_: string]: { range: number, used: boolean }};
     user: User;
     userId = 'goEdwr6nOpN0oyiAGWvs9vFWaSj1';
     subscriptions: Subscription;
@@ -33,6 +33,8 @@ export class TabListPromosPage implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        // TODO: fix
+        // this.userId = this.authService.userId;
         this.getPromos();
     }
 
@@ -84,6 +86,10 @@ export class TabListPromosPage implements OnInit, OnDestroy {
             })
             .catch(err => {
                 console.log('Error', err);
+                // TODO: remove
+                // this.getScannedPromo('EXISTEPAS');
+                this.getScannedPromo('Extra10');
+                // this.getScannedPromo('KADO20');
             });
     }
 
@@ -119,13 +125,12 @@ export class TabListPromosPage implements OnInit, OnDestroy {
      * Ajout de la promotion à l'utilisateur, en tant qu'attribut supplémentaire de l'objet ownedPromos (data type Map)
      */
     addScannedPromo(ref: DocumentReference) {
-        const arr = Object.keys(this.mapPromos).map(key => {
-            return [this.mapPromos[key].range];
-            // @ts-ignore
-        }).flat();
-        const range = Math.max(...arr) + 1;
+        const arrKeys: Array<string> = Object.keys(this.mapPromos);
+        // @ts-ignore
+        const arrRanges: Array<number> = arrKeys.flatMap(key => [this.mapPromos[key].range]);
+        const newRange = Math.max(...arrRanges) + 1;
         this.afs.doc<UserFirestore>('users/' + this.userId).set({
-            ownedPromos: {[ref.id]: {range, used: false}}
+            ownedPromos: {[ref.id]: {range: newRange, used: false}}
         } as UserFirestore, { merge: true });
     }
 

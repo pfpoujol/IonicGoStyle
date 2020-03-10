@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {AngularFirestore, DocumentChangeAction, DocumentReference} from '@angular/fire/firestore';
-import {AuthService} from '../auth.service';
+import {AuthService} from './auth.service';
 import {Promotion} from '../models/Promotion';
 import {Observable} from 'rxjs';
 import * as firebase from 'firebase';
