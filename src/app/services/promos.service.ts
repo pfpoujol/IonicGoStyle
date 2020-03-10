@@ -1,13 +1,7 @@
 import {Injectable} from '@angular/core';
 import {AngularFirestore, DocumentChangeAction, DocumentReference} from '@angular/fire/firestore';
-import {AuthService} from './auth.service';
-import {Promotion} from '../models/Promotion';
 import {Observable} from 'rxjs';
-import * as firebase from 'firebase';
-import FieldPath = firebase.firestore.FieldPath;
-// import {FieldPath} from '@angular/fire/firestore/interfaces';
 import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
-
 
 @Injectable({
     providedIn: 'root'
@@ -27,8 +21,9 @@ export class PromosService {
     getPromos(array: Array<string>): Observable<DocumentChangeAction<PromotionFirestore>[]> {
         return (array.length === 0 ? undefined :
             this.firestore.collection<PromotionFirestore>('promotions', ref => ref
-                .orderBy('dateExpiration', 'asc')
-                .where('code', 'in', array)).snapshotChanges());
+                .where('dateExpiration', '>', new Date())
+                .where('code', 'in', array))
+                .snapshotChanges());
     }
 
     /*  getUser(): DocumentReference {

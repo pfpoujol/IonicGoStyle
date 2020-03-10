@@ -6,7 +6,8 @@ import {AngularFireAuthModule} from '@angular/fire/auth';
 import { environment } from '../environments/environment';
 
 const routes: Routes = [
-  { path: '', loadChildren: () => import('./home/home.module').then( m => m.HomePageModule)},
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: 'home', loadChildren: () => import('./home/home.module').then( m => m.HomePageModule)},
   {
     path: 'login',
     loadChildren: () => import('./login/login.module').then( m => m.LoginPageModule)
