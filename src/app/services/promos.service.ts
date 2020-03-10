@@ -19,11 +19,10 @@ export class PromosService {
      * TODO: Ordonner par user range
      */
     getPromos(array: Array<string>): Observable<DocumentChangeAction<PromotionFirestore>[]> {
-        return (array.length === 0 ? undefined :
-            this.firestore.collection<PromotionFirestore>('promotions', ref => ref
+        return this.firestore.collection<PromotionFirestore>('promotions', ref => ref
                 .where('dateExpiration', '>', new Date())
                 .where('code', 'in', array))
-                .snapshotChanges());
+                .snapshotChanges();
     }
 
     /*  getUser(): DocumentReference {

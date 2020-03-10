@@ -20,7 +20,7 @@ import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage implements OnInit, OnDestroy {
-  promos: Array<Promotion>;
+  promos: Array<Promotion> = [];
   mapPromos: { [_: string]: { range: number, used: boolean }};
   user: User;
   userId = 'goEdwr6nOpN0oyiAGWvs9vFWaSj1';
@@ -35,7 +35,7 @@ export class HomePage implements OnInit, OnDestroy {
   }
 
     ngOnInit() {
-        // TODO: fix
+        // TODO: fix get userId
         // this.userId = this.authService.userId;
         this.getPromos();
     }
@@ -44,22 +44,26 @@ export class HomePage implements OnInit, OnDestroy {
      * Obtention de la liste des promotions de l'utilisateur ordonnée par date d'expiration
      */
     getPromos() {
-        const subscription1 = this.afs.doc<UserFirestore>('users/' + this.userId).valueChanges().subscribe(action => {
+        this.subscriptions = this.afs.doc<UserFirestore>('users/' + this.userId).valueChanges().subscribe(action => {
             this.mapPromos = action.ownedPromos;
-            const subscription2 = this.promosService.getPromos(Object.keys(action.ownedPromos)).pipe(
-                map(actions => actions.map(a => {
-                    return {
-                        code: a.payload.doc.id,
-                        dateExpiration: a.payload.doc.data().dateExpiration.toDate(),
-                        description: a.payload.doc.data().description
-                    };
-                }))
-            ).subscribe(promos => {
-                this.promos = promos;
-            });
-            this.addToSubsciption(subscription2);
+            const arrPromos = Object.keys(action.ownedPromos);
+            if (arrPromos.length > 0) {
+                const subscription = this.promosService.getPromos(arrPromos).pipe(
+                    map(actions => actions.map(a => {
+                        return {
+                            code: a.payload.doc.id,
+                            dateExpiration: a.payload.doc.data().dateExpiration.toDate(),
+                            description: a.payload.doc.data().description
+                        };
+                    }))
+                ).subscribe(promos => {
+                    this.promos = promos;
+                });
+                this.subscriptions.add(subscription);
+            } else {
+                this.promos = [];
+            }
         });
-        this.addToSubsciption(subscription1);
     }
 
     /**
@@ -92,7 +96,7 @@ export class HomePage implements OnInit, OnDestroy {
                 console.log('Error', err);
                 // TODO: remove
                 // this.getScannedPromo('EXISTEPAS');
-                this.getScannedPromo('Extra10');
+                this.getScannedPromo('Extrda10');
                 // this.getScannedPromo('KADO20');
             });
     }
@@ -103,24 +107,16 @@ export class HomePage implements OnInit, OnDestroy {
      */
     getScannedPromo(txtCode: string) {
         this.promosService.getPromo(txtCode).get().then((snapshot: DocumentSnapshot<PromotionFirestore>) => {
-            let newPromo;
-            if (snapshot.exists && moment(snapshot.data().dateExpiration.toDate()).isAfter()) {
-                newPromo = {
-                    code: snapshot.id,
-                    dateExpiration: snapshot.data().dateExpiration.toDate(),
-                    description: snapshot.data().description
-                } as Promotion;
-            }
-            return snapshot.ref;
-        }).then(promoRef => {
-            if (promoRef) {
-                if (!Object.keys(this.mapPromos).includes(promoRef.id)) {
-                    this.addScannedPromo(promoRef);
+            if (snapshot.exists) {
+                if (Object.keys(this.mapPromos).includes(snapshot.id)) {
+                    alert('Vous détenez déjà cette promotion.');
+                } else if (moment(snapshot.data().dateExpiration.toDate()).isSameOrBefore()) {
+                    alert('Cette promotion est expirée.');
                 } else {
-                    alert('Ce QR code a déjà été scanné');
+                    this.addScannedPromo(snapshot.ref);
                 }
             } else {
-                alert('La promo a expirée ou n\'existe pas.');
+                alert('Cette promotion n\'existe pas.');
             }
         });
     }
@@ -132,14 +128,11 @@ export class HomePage implements OnInit, OnDestroy {
         const arrKeys: Array<string> = Object.keys(this.mapPromos);
         // @ts-ignore
         const arrRanges: Array<number> = arrKeys.flatMap(key => [this.mapPromos[key].range]);
-        const newRange = Math.max(...arrRanges) + 1;
+        console.log(Math.max(...arrRanges));
+        const newRange = arrRanges.length === 0 ? 0 : Math.max(...arrRanges) + 1;
         this.afs.doc<UserFirestore>('users/' + this.userId).set({
             ownedPromos: {[ref.id]: {range: newRange, used: false}}
         } as UserFirestore, { merge: true });
-    }
-
-    addToSubsciption(newSubsciption) {
-        this.subscriptions ? this.subscriptions.add(newSubsciption) : this.subscriptions = newSubsciption;
     }
 
     ngOnDestroy() {
