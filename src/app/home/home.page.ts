@@ -15,29 +15,42 @@ import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
 
 
 @Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
+    selector: 'app-home',
+    templateUrl: 'home.page.html',
+    styleUrls: ['home.page.scss'],
 })
 export class HomePage implements OnInit, OnDestroy {
-  promos: Array<Promotion> = [];
-  mapPromos: { [_: string]: { range: number, used: boolean }};
-  user: User;
-  userId = 'goEdwr6nOpN0oyiAGWvs9vFWaSj1';
-  subscriptions: Subscription;
+    promos: Array<Promotion> = [
+        {
+            code: 'SUPER50',
+            dateExpiration: new Date(2020, 3, 9),
+            description: '30% de réduction sur Sneakers Adidas'
+        },
+        {
+            code: 'KADO20',
+            dateExpiration: new Date(2020, 3, 7),
+            description: '20% de réduction sur Jean Levi\'s'
+        }
+    ];
+    mapPromos: { [_: string]: { range: number, used: boolean } };
+    user: User;
+    userId = 'goEdwr6nOpN0oyiAGWvs9vFWaSj1';
+    subscriptions: Subscription;
+    CopyTextAreaText = 'Paste here!';
+    PasteTextAreaText = 'Paste here!';
 
-  constructor(private afs: AngularFirestore,
-              private authService: AuthService,
-              private promosService: PromosService,
-              private barcodeScanner: BarcodeScanner,
-              private clipboard: Clipboard,
-              private router: Router) {
-  }
+    constructor(private afs: AngularFirestore,
+                private authService: AuthService,
+                private promosService: PromosService,
+                private barcodeScanner: BarcodeScanner,
+                private clipboard: Clipboard,
+                private router: Router) {
+    }
 
     ngOnInit() {
         // TODO: fix get userId
         // this.userId = this.authService.userId;
-        this.getPromos();
+        // this.getPromos();
     }
 
     /**
@@ -86,7 +99,7 @@ export class HomePage implements OnInit, OnDestroy {
             .then(barcodeData => {
                 if (!barcodeData.cancelled) {
                     if (barcodeData.format === 'QR_CODE') {
-                        this.getScannedPromo(barcodeData.text);
+                        // this.getScannedPromo(barcodeData.text);
                     } else {
                         alert('Désolé, je ne scanne que les QR codes.');
                     }
@@ -96,7 +109,7 @@ export class HomePage implements OnInit, OnDestroy {
                 console.log('Error', err);
                 // TODO: remove
                 // this.getScannedPromo('EXISTEPAS');
-                this.getScannedPromo('Extrda10');
+                // this.getScannedPromo('Extrda10');
                 // this.getScannedPromo('KADO20');
             });
     }
@@ -132,7 +145,7 @@ export class HomePage implements OnInit, OnDestroy {
         const newRange = arrRanges.length === 0 ? 0 : Math.max(...arrRanges) + 1;
         this.afs.doc<UserFirestore>('users/' + this.userId).set({
             ownedPromos: {[ref.id]: {range: newRange, used: false}}
-        } as UserFirestore, { merge: true });
+        } as UserFirestore, {merge: true});
     }
 
     ngOnDestroy() {
@@ -143,4 +156,27 @@ export class HomePage implements OnInit, OnDestroy {
         this.authService.doLogout();
         this.router.navigate(['login']);
     }
+    // Copy Event
+    copyText() {
+        this.clipboard.copy(this.CopyTextAreaText);
+    }
+
+    // Paste Event
+    pasteText() {
+        this.clipboard.paste().then(
+            (resolve: string) => {
+                this.PasteTextAreaText = resolve;
+                console.log(resolve);
+            },
+            (reject: string) => {
+                console.error('Error: ' + reject);
+            }
+        );
+    }
+
+    // Clear Event
+    clearClipboard() {
+        this.clipboard.clear();
+    }
+
 }
