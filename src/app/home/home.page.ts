@@ -96,7 +96,7 @@ export class HomePage implements OnInit, OnDestroy {
                 console.log('Error', err);
                 // TODO: remove
                 // this.getScannedPromo('EXISTEPAS');
-                this.getScannedPromo('Extrda10');
+                // this.getScannedPromo('Extrda10');
                 // this.getScannedPromo('KADO20');
             });
     }
