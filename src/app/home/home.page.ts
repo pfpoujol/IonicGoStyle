@@ -15,24 +15,24 @@ import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
 
 
 @Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
+    selector: 'app-home',
+    templateUrl: 'home.page.html',
+    styleUrls: ['home.page.scss'],
 })
 export class HomePage implements OnInit, OnDestroy {
-  promos: Array<Promotion> = [];
-  mapPromos: { [_: string]: { range: number, used: boolean }};
-  user: User;
-  userId = 'goEdwr6nOpN0oyiAGWvs9vFWaSj1';
-  subscriptions: Subscription;
+    promos: Array<Promotion> = [];
+    mapPromos: { [_: string]: { range: number, used: boolean } };
+    user: User;
+    userId = 'goEdwr6nOpN0oyiAGWvs9vFWaSj1';
+    subscriptions: Subscription;
 
-  constructor(private afs: AngularFirestore,
-              private authService: AuthService,
-              private promosService: PromosService,
-              private barcodeScanner: BarcodeScanner,
-              private clipboard: Clipboard,
-              private router: Router) {
-  }
+    constructor(private afs: AngularFirestore,
+                private authService: AuthService,
+                private promosService: PromosService,
+                private barcodeScanner: BarcodeScanner,
+                private clipboard: Clipboard,
+                private router: Router) {
+    }
 
     ngOnInit() {
         // TODO: fix get userId
@@ -132,7 +132,7 @@ export class HomePage implements OnInit, OnDestroy {
         const newRange = arrRanges.length === 0 ? 0 : Math.max(...arrRanges) + 1;
         this.afs.doc<UserFirestore>('users/' + this.userId).set({
             ownedPromos: {[ref.id]: {range: newRange, used: false}}
-        } as UserFirestore, { merge: true });
+        } as UserFirestore, {merge: true});
     }
 
     ngOnDestroy() {
@@ -142,5 +142,9 @@ export class HomePage implements OnInit, OnDestroy {
     logout() {
         this.authService.doLogout();
         this.router.navigate(['login']);
+    }
+
+    copyCode(index: number) {
+        this.clipboard.copy(this.promos[index].code);
     }
 }
