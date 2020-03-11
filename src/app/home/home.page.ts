@@ -20,24 +20,11 @@ import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
     styleUrls: ['home.page.scss'],
 })
 export class HomePage implements OnInit, OnDestroy {
-    promos: Array<Promotion> = [
-        {
-            code: 'SUPER50',
-            dateExpiration: new Date(2020, 3, 9),
-            description: '30% de réduction sur Sneakers Adidas'
-        },
-        {
-            code: 'KADO20',
-            dateExpiration: new Date(2020, 3, 7),
-            description: '20% de réduction sur Jean Levi\'s'
-        }
-    ];
+    promos: Array<Promotion> = [];
     mapPromos: { [_: string]: { range: number, used: boolean } };
     user: User;
     userId = 'goEdwr6nOpN0oyiAGWvs9vFWaSj1';
     subscriptions: Subscription;
-    CopyTextAreaText = this.promos[0].code;
-    PasteTextAreaText = 'Paste here!';
 
     constructor(private afs: AngularFirestore,
                 private authService: AuthService,
@@ -50,7 +37,7 @@ export class HomePage implements OnInit, OnDestroy {
     ngOnInit() {
         // TODO: fix get userId
         // this.userId = this.authService.userId;
-        // this.getPromos();
+        this.getPromos();
     }
 
     /**
@@ -99,7 +86,7 @@ export class HomePage implements OnInit, OnDestroy {
             .then(barcodeData => {
                 if (!barcodeData.cancelled) {
                     if (barcodeData.format === 'QR_CODE') {
-                        // this.getScannedPromo(barcodeData.text);
+                        this.getScannedPromo(barcodeData.text);
                     } else {
                         alert('Désolé, je ne scanne que les QR codes.');
                     }
@@ -156,27 +143,8 @@ export class HomePage implements OnInit, OnDestroy {
         this.authService.doLogout();
         this.router.navigate(['login']);
     }
-    // Copy Event
-    copyText(index: number) {
+
+    copyCode(index: number) {
         this.clipboard.copy(this.promos[index].code);
     }
-
-    // Paste Event
-    pasteText() {
-        this.clipboard.paste().then(
-            (resolve: string) => {
-                this.PasteTextAreaText = resolve;
-                console.log(resolve);
-            },
-            (reject: string) => {
-                console.error('Error: ' + reject);
-            }
-        );
-    }
-
-    // Clear Event
-    clearClipboard() {
-        this.clipboard.clear();
-    }
-
 }

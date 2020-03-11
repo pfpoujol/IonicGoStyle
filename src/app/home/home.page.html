@@ -22,22 +22,12 @@
             </ion-item>
             <ion-item-options side="end">
                 <ion-item-option>Unread</ion-item-option>
-                <ion-item-option (click)="copyText(i)">
+                <ion-item-option (click)="copyCode(i)">
                     <ion-icon name="copy-outline"></ion-icon>
                 </ion-item-option>
             </ion-item-options>
         </ion-item-sliding>
     </ion-list>
-    <p>Enter text then click copy<br>
-        <ion-textarea [(ngModel)]="CopyTextAreaText"></ion-textarea>
-        <ion-button color="primary" (click)="copyText()">Copy Text</ion-button>
-    </p>
-
-    <p>Paste text<br>
-        <ion-textarea [(ngModel)]="PasteTextAreaText"></ion-textarea>
-        <ion-button color="primary" (click)="pasteText()">Paste Here</ion-button>
-        <ion-button color="primary" (click)="clearClipboard()">Clear Clipboard</ion-button>
-    </p>
     <ion-fab class="ion-padding" vertical="bottom" horizontal="end" slot="fixed">
         <ion-fab-button (click)="scanCode()">
             <ion-icon name="qr-code-outline"></ion-icon>
