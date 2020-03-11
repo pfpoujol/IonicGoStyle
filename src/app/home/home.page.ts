@@ -36,7 +36,7 @@ export class HomePage implements OnInit, OnDestroy {
     user: User;
     userId = 'goEdwr6nOpN0oyiAGWvs9vFWaSj1';
     subscriptions: Subscription;
-    CopyTextAreaText = 'Paste here!';
+    CopyTextAreaText = this.promos[0].code;
     PasteTextAreaText = 'Paste here!';
 
     constructor(private afs: AngularFirestore,
