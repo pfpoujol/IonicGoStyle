@@ -12,6 +12,7 @@ import {Clipboard} from '@ionic-native/clipboard/ngx';
 import {BarcodeScanner} from '@ionic-native/barcode-scanner/ngx';
 import * as moment from 'moment';
 import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
+import {FirebaseAuth} from '@angular/fire';
 
 
 @Component({
@@ -20,48 +21,53 @@ import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
     styleUrls: ['home.page.scss'],
 })
 export class HomePage implements OnInit, OnDestroy {
-  promos: Array<Promotion> = [];
-  mapPromos: { [_: string]: { range: number, used: boolean }};
-  user: User;
-  userId: string;
-  subscriptions: Subscription;
+    promos: Array<Promotion> = [];
+    mapPromos: { [_: string]: { range: number, used: boolean } } = {};
+    user: User;
+    userId: string;
+    subscriptions: Subscription;
+
     constructor(private afs: AngularFirestore,
                 private authService: AuthService,
                 private promosService: PromosService,
                 private barcodeScanner: BarcodeScanner,
-                private clipboard: Clipboard,
-                private router: Router) {
+                private clipboard: Clipboard) {
     }
 
     ngOnInit() {
-        // TODO: fix get userId
-        this.userId = this.authService.userId;
-        this.getPromos();
+        this.authService.getPromisedUser().then(user => {
+            this.userId = user.uid;
+            return user;
+        }).then(user => this.getPromos(user.uid));
     }
 
     /**
      * Obtention de la liste des promotions de l'utilisateur ordonnée par date d'expiration
      */
-    getPromos() {
-        this.subscriptions = this.afs.doc<UserFirestore>('users/' + this.userId).valueChanges().subscribe(action => {
-            this.mapPromos = action.ownedPromos;
-            const arrPromos = Object.keys(action.ownedPromos);
-            if (arrPromos.length > 0) {
-                const subscription = this.promosService.getPromos(arrPromos).pipe(
-                    map(actions => actions.map(a => {
-                        return {
-                            code: a.payload.doc.id,
-                            dateExpiration: a.payload.doc.data().dateExpiration.toDate(),
-                            description: a.payload.doc.data().description
-                        };
-                    }))
-                ).subscribe(promos => {
-                    this.promos = promos;
-                });
-                this.subscriptions.add(subscription);
-            } else {
-                this.promos = [];
+    getPromos(uid: string) {
+        this.subscriptions = this.afs.doc<UserFirestore>('users/' + uid).valueChanges().subscribe(action => {
+            if (action !== undefined) {
+                console.log(action);
+                this.mapPromos = action.ownedPromos;
+                const arrPromos = Object.keys(action.ownedPromos);
+                if (arrPromos.length > 0) {
+                    const subscription = this.promosService.getPromos(arrPromos).pipe(
+                        map(actions => actions.map(a => {
+                            return {
+                                code: a.payload.doc.id,
+                                dateExpiration: a.payload.doc.data().dateExpiration.toDate(),
+                                description: a.payload.doc.data().description
+                            };
+                        }))
+                    ).subscribe(promos => {
+                        this.promos = promos;
+                    });
+                    this.subscriptions.add(subscription);
+                } else {
+                    this.promos = [];
+                }
             }
+
         });
     }
 
@@ -139,8 +145,9 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     logout() {
+        this.subscriptions.unsubscribe();
         this.authService.doLogout();
-        this.router.navigate(['login']);
+        // this.router.navigate(['login']);
     }
 
     copyCode(index: number) {
