@@ -20,12 +20,11 @@ import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
     styleUrls: ['home.page.scss'],
 })
 export class HomePage implements OnInit, OnDestroy {
-    promos: Array<Promotion> = [];
-    mapPromos: { [_: string]: { range: number, used: boolean } };
-    user: User;
-    userId = 'goEdwr6nOpN0oyiAGWvs9vFWaSj1';
-    subscriptions: Subscription;
-
+  promos: Array<Promotion> = [];
+  mapPromos: { [_: string]: { range: number, used: boolean }};
+  user: User;
+  userId: string;
+  subscriptions: Subscription;
     constructor(private afs: AngularFirestore,
                 private authService: AuthService,
                 private promosService: PromosService,
@@ -36,7 +35,7 @@ export class HomePage implements OnInit, OnDestroy {
 
     ngOnInit() {
         // TODO: fix get userId
-        // this.userId = this.authService.userId;
+        this.userId = this.authService.userId;
         this.getPromos();
     }
 
@@ -95,7 +94,7 @@ export class HomePage implements OnInit, OnDestroy {
             .catch(err => {
                 console.log('Error', err);
                 // TODO: remove
-                this.getScannedPromo('KISSKISS');
+                // this.getScannedPromo('EXISTEPAS');
                 // this.getScannedPromo('Extrda10');
                 // this.getScannedPromo('KADO20');
             });

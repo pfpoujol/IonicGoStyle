@@ -8,10 +8,9 @@ import {Subscription} from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private authSubscription: Subscription;
   authState: firebase.User;
   constructor(public afAuth: AngularFireAuth) {
-    this.authSubscription = this.afAuth.authState.subscribe( authState => {
+    this.afAuth.authState.subscribe( authState => {
       this.authState = authState;
     });
   }
@@ -48,15 +47,17 @@ export class AuthService {
   }
 
   doLogout() {
-    return new Promise((resolve, reject) => {
-      this.afAuth.auth.signOut()
-          .then(() => {
-            this.authSubscription.unsubscribe();
-            resolve();
-          }).catch((error) => {
-        reject();
-      });
-    });
+    firebase.auth().signOut();
+    /*return new Promise((resolve, reject) => {
+        this.afAuth.auth.signOut()
+            .then(() => {
+                this.firebaseService.unsubscribeOnLogOut();
+                resolve();
+            }).catch((error) => {
+            reject();
+        });
+    });*/
+
   }
 
   getUser(): Promise<firebase.User> {
