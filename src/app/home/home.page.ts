@@ -157,8 +157,8 @@ export class HomePage implements OnInit, OnDestroy {
         this.router.navigate(['login']);
     }
     // Copy Event
-    copyText() {
-        this.clipboard.copy(this.CopyTextAreaText);
+    copyText(index: number) {
+        this.clipboard.copy(this.promos[index].code);
     }
 
     // Paste Event
