@@ -33,7 +33,7 @@ export class LoginPage implements OnInit {
 
   ngOnInit() {
     this.validationsForm = this.formBuilder.group({
-      email: new FormControl('pf.poujol@gmail.com', Validators.compose([
+      email: new FormControl('thomas@gmail.com', Validators.compose([
         Validators.required,
         Validators.pattern('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$')
       ])),
