@@ -37,9 +37,6 @@ export class AuthService {
     });
   }
 
-  doCreateAccount(){
-    this.router.navigate(['register']);
-  }
 
   doRegister(value){
     return new Promise<any>((resolve, reject) => {

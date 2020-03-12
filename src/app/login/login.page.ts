@@ -55,8 +55,4 @@ export class LoginPage implements OnInit {
           console.log(err);
         });
   }
-
-  goToRegisterPage(){
-    this.authService.doCreateAccount();
-  }
 }
