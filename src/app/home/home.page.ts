@@ -12,6 +12,7 @@ import {BarcodeScanner} from '@ionic-native/barcode-scanner/ngx';
 import * as moment from 'moment';
 import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
 import { ToastController } from '@ionic/angular';
+import {AlertController} from '@ionic/angular';
 
 
 @Component({
@@ -25,15 +26,20 @@ export class HomePage implements OnInit, OnDestroy {
     user: User;
     userId: string;
     subscriptions: Subscription;
+    msgArrIsEmpty: string;
 
     constructor(private afs: AngularFirestore,
                 private authService: AuthService,
                 private promosService: PromosService,
                 private barcodeScanner: BarcodeScanner,
                 private clipboard: Clipboard,
+                public alertController: AlertController,
                 private toastController: ToastController) {
     }
-
+    ionViewWillEnter() {
+        this.msgArrIsEmpty = '';
+        // this.checkAccount();
+    }
     ngOnInit() {
         this.authService.getPromisedUser().then(user => {
             this.userId = user.uid;
@@ -47,7 +53,6 @@ export class HomePage implements OnInit, OnDestroy {
     getPromos(uid: string) {
         this.subscriptions = this.afs.doc<UserFirestore>('users/' + uid).valueChanges().subscribe(action => {
             if (action !== undefined) {
-                console.log(action);
                 this.mapPromos = action.ownedPromos;
                 const arrPromos = Object.keys(action.ownedPromos);
                 if (arrPromos.length > 0) {
@@ -64,8 +69,12 @@ export class HomePage implements OnInit, OnDestroy {
                     });
                     this.subscriptions.add(subscription);
                 } else {
+                    this.msgArrIsEmpty = 'Vous ne possédez aucune promotion.';
                     this.promos = [];
                 }
+            } else {
+                this.msgArrIsEmpty = 'Vous ne possédez aucune promotion.';
+                this.presentAlertPrompt(this.userId);
             }
 
         });
@@ -74,14 +83,11 @@ export class HomePage implements OnInit, OnDestroy {
     /**
      * Obtention des infos de l'utilisateur depuis Firebase Authentification + Cloud FireStore
      */
-    getUser() {
+    checkAccount() {
         this.afs.doc('users/' + this.userId).ref.get().then((snapshot: DocumentSnapshot<UserFirestore>) => {
-            this.user = {
-                uid: this.userId,
-                name: snapshot.data().name,
-                firstname: snapshot.data().firstname
-                // TODO: fusionner avec les infos d'authentification
-            } as User;
+            if ( !snapshot.exists ) {
+                this.presentAlertPrompt(this.userId);
+            }
         });
     }
 
@@ -133,7 +139,6 @@ export class HomePage implements OnInit, OnDestroy {
         const arrKeys: Array<string> = Object.keys(this.mapPromos);
         // @ts-ignore
         const arrRanges: Array<number> = arrKeys.flatMap(key => [this.mapPromos[key].range]);
-        console.log(Math.max(...arrRanges));
         const newRange = arrRanges.length === 0 ? 0 : Math.max(...arrRanges) + 1;
         this.afs.doc<UserFirestore>('users/' + this.userId).set({
             ownedPromos: {[ref.id]: {range: newRange, used: false}}
@@ -160,5 +165,45 @@ export class HomePage implements OnInit, OnDestroy {
             duration: 2000
         });
         toast.present();
+    }
+    async presentAlertPrompt(userId: string) {
+        const alert = await this.alertController.create({
+            backdropDismiss: false,
+            header: 'Bienvenue chez GoStyle !',
+            subHeader: 'Veuillez compléter votre profile.',
+            inputs: [
+                {
+                    name: 'name',
+                    type: 'text',
+                    placeholder: 'Votre nom'
+                },
+                {
+                    name: 'firstname',
+                    type: 'text',
+                    placeholder: 'Votre prénom'
+                }
+            ],
+            buttons: [
+                {
+                    text: 'Déconnexion',
+                    role: 'cancel',
+                    cssClass: 'secondary',
+                    handler: () => {
+                        this.logout();
+                    }
+                }, {
+                    text: 'Enregistrer',
+                    handler: (data) => {
+                        this.afs.doc<UserFirestore>('users/' + this.userId).set({
+                            name: data.name,
+                            firstname: data.firstname,
+                            ownedPromos: {}
+                        } as UserFirestore);
+                    }
+                }
+            ]
+        });
+
+        await alert.present();
     }
 }
