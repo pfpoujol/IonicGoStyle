@@ -1,6 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {AuthService} from '../services/auth.service';
-import {Router} from '@angular/router';
 import {PromosService} from '../services/promos.service';
 import {Promotion} from '../models/Promotion';
 import {User} from '../models/User';
@@ -12,7 +11,7 @@ import {Clipboard} from '@ionic-native/clipboard/ngx';
 import {BarcodeScanner} from '@ionic-native/barcode-scanner/ngx';
 import * as moment from 'moment';
 import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
-import {FirebaseAuth} from '@angular/fire';
+import { ToastController } from '@ionic/angular';
 
 
 @Component({
@@ -31,7 +30,8 @@ export class HomePage implements OnInit, OnDestroy {
                 private authService: AuthService,
                 private promosService: PromosService,
                 private barcodeScanner: BarcodeScanner,
-                private clipboard: Clipboard) {
+                private clipboard: Clipboard,
+                private toastController: ToastController) {
     }
 
     ngOnInit() {
@@ -151,6 +151,14 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     copyCode(index: number) {
-        this.clipboard.copy(this.promos[index].code);
+        this.clipboard.copy(this.promos[index].code).then(() =>
+            this.presentToast('<ion-icon name="copy"></ion-icon>   Code promo copié dans le press-papier'));
+    }
+    async presentToast(message: string) {
+        const toast = await this.toastController.create({
+            message,
+            duration: 2000
+        });
+        toast.present();
     }
 }
