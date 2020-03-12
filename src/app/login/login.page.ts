@@ -15,15 +15,16 @@ export class LoginPage implements OnInit {
   errorMessage = '';
 
   validationMessages = {
-    email: [
-      { type: 'required', message: 'Email is required.' },
-      { type: 'pattern', message: 'Please enter a valid email.' }
+    'email': [
+      { type: 'required', message: 'Un email est requis.' },
+      { type: 'pattern', message: 'Veuillez entrer une adresse mail valide.' }
     ],
-    password: [
-      { type: 'required', message: 'Password is required.' },
-      { type: 'minlength', message: 'Password must be at least 5 characters long.' }
+    'password': [
+      { type: 'required', message: 'Un mot de passe est requis.' },
+      { type: 'minlength', message: 'Votre mot de passe doit faire un minimum de 5 caractères.' }
     ]
-  };
+    };
+
 
   constructor(
       private authService: AuthService,
@@ -53,5 +54,9 @@ export class LoginPage implements OnInit {
           this.errorMessage = err.message;
           console.log(err);
         });
+  }
+
+  goToRegisterPage(){
+    this.authService.doCreateAccount();
   }
 }

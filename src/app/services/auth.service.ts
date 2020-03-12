@@ -37,6 +37,19 @@ export class AuthService {
     });
   }
 
+  doCreateAccount(){
+    this.router.navigate(['register']);
+  }
+
+  doRegister(value){
+    return new Promise<any>((resolve, reject) => {
+      firebase.auth().createUserWithEmailAndPassword(value.email, value.password)
+      .then(
+        res => resolve(res),
+        err => reject(err))
+    })
+  }
+
   getPromisedUser(): Promise<firebase.User> {
     return this.afAuth.authState.pipe(first()).toPromise();
   }
