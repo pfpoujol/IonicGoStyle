@@ -26,6 +26,7 @@ export class HomePage implements OnInit, OnDestroy {
     user: User;
     userId: string;
     subscriptions: Subscription;
+    msgArrIsEmpty: string;
 
     constructor(private afs: AngularFirestore,
                 private authService: AuthService,
@@ -35,6 +36,7 @@ export class HomePage implements OnInit, OnDestroy {
                 public alertController: AlertController) {
     }
     ionViewWillEnter() {
+        this.msgArrIsEmpty = '';
         // this.checkAccount();
     }
     ngOnInit() {
@@ -66,9 +68,11 @@ export class HomePage implements OnInit, OnDestroy {
                     });
                     this.subscriptions.add(subscription);
                 } else {
+                    this.msgArrIsEmpty = 'Vous ne possédez aucune promotion.';
                     this.promos = [];
                 }
             } else {
+                this.msgArrIsEmpty = 'Vous ne possédez aucune promotion.';
                 this.presentAlertPrompt(this.userId);
             }
 

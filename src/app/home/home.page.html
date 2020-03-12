@@ -29,7 +29,7 @@
         </ion-item-sliding>
 
     </ion-list>
-    <div *ngIf="this.promos.length === 0" class="ion-text-center"><p>Vous ne possédez pas encore de promotion.</p></div>
+    <div *ngIf="this.promos.length === 0" class="ion-text-center"><p>{{ msgArrIsEmpty }}</p></div>
     <ion-fab class="ion-padding" vertical="bottom" horizontal="end" slot="fixed">
         <ion-fab-button (click)="scanCode()">
             <ion-icon name="qr-code-outline"></ion-icon>
