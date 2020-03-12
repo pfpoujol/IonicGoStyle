@@ -39,12 +39,15 @@ export class AuthService {
     }
 
     registerUser(value) {
-        return new Promise<any>((resolve, reject) => {
-            firebase.auth().createUserWithEmailAndPassword(value.email, value.password)
-                .then(
-                    res => resolve(res),
-                    err => reject(err));
-        });
+        return this.afAuth.auth.createUserWithEmailAndPassword(value.email, value.password)
+            .then((result) => {
+                /* Call the SendVerificaitonMail() function when new user sign
+                up and returns promise */
+                // this.SendVerificationMail();
+                // this.SetUserData(result.user);
+            }).catch((error) => {
+                window.alert(error.message);
+            });
     }
 
     getPromisedUser(): Promise<firebase.User> {

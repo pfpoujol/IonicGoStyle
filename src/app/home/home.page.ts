@@ -12,7 +12,7 @@ import {Clipboard} from '@ionic-native/clipboard/ngx';
 import {BarcodeScanner} from '@ionic-native/barcode-scanner/ngx';
 import * as moment from 'moment';
 import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
-import {FirebaseAuth} from '@angular/fire';
+import {AlertController} from '@ionic/angular';
 
 
 @Component({
@@ -31,7 +31,8 @@ export class HomePage implements OnInit, OnDestroy {
                 private authService: AuthService,
                 private promosService: PromosService,
                 private barcodeScanner: BarcodeScanner,
-                private clipboard: Clipboard) {
+                private clipboard: Clipboard,
+                public alertController: AlertController) {
     }
 
     ngOnInit() {
@@ -46,8 +47,8 @@ export class HomePage implements OnInit, OnDestroy {
      */
     getPromos(uid: string) {
         this.subscriptions = this.afs.doc<UserFirestore>('users/' + uid).valueChanges().subscribe(action => {
+
             if (action !== undefined) {
-                console.log(action);
                 this.mapPromos = action.ownedPromos;
                 const arrPromos = Object.keys(action.ownedPromos);
                 if (arrPromos.length > 0) {
@@ -66,6 +67,9 @@ export class HomePage implements OnInit, OnDestroy {
                 } else {
                     this.promos = [];
                 }
+            } else {
+                console.log(action);
+                this.presentAlertPrompt(this.userId);
             }
 
         });
@@ -133,7 +137,6 @@ export class HomePage implements OnInit, OnDestroy {
         const arrKeys: Array<string> = Object.keys(this.mapPromos);
         // @ts-ignore
         const arrRanges: Array<number> = arrKeys.flatMap(key => [this.mapPromos[key].range]);
-        console.log(Math.max(...arrRanges));
         const newRange = arrRanges.length === 0 ? 0 : Math.max(...arrRanges) + 1;
         this.afs.doc<UserFirestore>('users/' + this.userId).set({
             ownedPromos: {[ref.id]: {range: newRange, used: false}}
@@ -152,5 +155,45 @@ export class HomePage implements OnInit, OnDestroy {
 
     copyCode(index: number) {
         this.clipboard.copy(this.promos[index].code);
+    }
+    async presentAlertPrompt(userId: string) {
+        const alert = await this.alertController.create({
+            backdropDismiss: false,
+            header: 'Bienvenue chez GoStyle !',
+            subHeader: 'Veuillez compléter votre profile.',
+            inputs: [
+                {
+                    name: 'name',
+                    type: 'text',
+                    placeholder: 'Votre nom'
+                },
+                {
+                    name: 'firstname',
+                    type: 'text',
+                    placeholder: 'Votre prénom'
+                }
+            ],
+            buttons: [
+                {
+                    text: 'Déconnexion',
+                    role: 'cancel',
+                    cssClass: 'secondary',
+                    handler: () => {
+                        this.logout();
+                    }
+                }, {
+                    text: 'Enregistrer',
+                    handler: (data) => {
+                        this.afs.doc<UserFirestore>('users/' + this.userId).set({
+                            name: data.name,
+                            firstname: data.firstname,
+                            ownedPromos: {}
+                        } as UserFirestore);
+                    }
+                }
+            ]
+        });
+
+        await alert.present();
     }
 }
