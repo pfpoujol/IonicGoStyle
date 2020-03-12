@@ -5,6 +5,7 @@ import {first, take} from 'rxjs/operators';
 import {Observable} from 'rxjs';
 import {User} from 'firebase';
 import {Router} from '@angular/router';
+import {NavController} from '@ionic/angular';
 
 @Injectable({
     providedIn: 'root'
@@ -12,7 +13,9 @@ import {Router} from '@angular/router';
 export class AuthService {
     constructor(public afAuth: AngularFireAuth,
                 private router: Router,
-                public ngZone: NgZone) {
+                public ngZone: NgZone,
+                public navController: NavController
+    ) {
     }
 
     doLogin(value) {
@@ -29,12 +32,13 @@ export class AuthService {
 
     doLogout() {
         // window.localStorage.removeItem('firebase:session::<host-name>');
-        firebase.auth().signOut();
+        // firebase.auth().signOut();
         return this.afAuth.auth.signOut().then(() => {
             // localStorage.removeItem('user');
-            this.router.navigate(['login']).then(() => this.router.routeReuseStrategy.shouldReuseRoute = function() {
+            this.navController.navigateRoot(['login']);
+            /*then(() => this.router.routeReuseStrategy.shouldReuseRoute = function() {
                 return false;
-            });
+            });*/
         });
     }
 

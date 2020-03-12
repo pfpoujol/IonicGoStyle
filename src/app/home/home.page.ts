@@ -34,7 +34,9 @@ export class HomePage implements OnInit, OnDestroy {
                 private clipboard: Clipboard,
                 public alertController: AlertController) {
     }
-
+    ionViewWillEnter() {
+        // this.checkAccount();
+    }
     ngOnInit() {
         this.authService.getPromisedUser().then(user => {
             this.userId = user.uid;
@@ -47,7 +49,6 @@ export class HomePage implements OnInit, OnDestroy {
      */
     getPromos(uid: string) {
         this.subscriptions = this.afs.doc<UserFirestore>('users/' + uid).valueChanges().subscribe(action => {
-
             if (action !== undefined) {
                 this.mapPromos = action.ownedPromos;
                 const arrPromos = Object.keys(action.ownedPromos);
@@ -68,7 +69,6 @@ export class HomePage implements OnInit, OnDestroy {
                     this.promos = [];
                 }
             } else {
-                console.log(action);
                 this.presentAlertPrompt(this.userId);
             }
 
@@ -78,14 +78,11 @@ export class HomePage implements OnInit, OnDestroy {
     /**
      * Obtention des infos de l'utilisateur depuis Firebase Authentification + Cloud FireStore
      */
-    getUser() {
+    checkAccount() {
         this.afs.doc('users/' + this.userId).ref.get().then((snapshot: DocumentSnapshot<UserFirestore>) => {
-            this.user = {
-                uid: this.userId,
-                name: snapshot.data().name,
-                firstname: snapshot.data().firstname
-                // TODO: fusionner avec les infos d'authentification
-            } as User;
+            if ( !snapshot.exists ) {
+                this.presentAlertPrompt(this.userId);
+            }
         });
     }
 
