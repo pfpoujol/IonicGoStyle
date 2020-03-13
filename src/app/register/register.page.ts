@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
-import {AlertController, NavController} from '@ionic/angular';
-import {Clipboard} from '@ionic-native/clipboard/ngx';
+import {NavController} from '@ionic/angular';
 
 @Component({
   selector: 'app-register',
@@ -27,8 +26,7 @@ export class RegisterPage implements OnInit {
 
   constructor(private navCtrl: NavController,
               private authService: AuthService,
-              private formBuilder: FormBuilder,
-              public alertController: AlertController) { }
+              private formBuilder: FormBuilder) { }
 
   ngOnInit() {
     this.validationsForm = this.formBuilder.group({
@@ -47,6 +45,7 @@ export class RegisterPage implements OnInit {
         .then(res => {
           console.log(res);
           this.errorMessage = '';
+          this.validationsForm.reset();
           this.successMessage = 'Votre compte a été créé. Veuillez vous connecter.';
         }, err => {
           console.log(err);
@@ -56,14 +55,5 @@ export class RegisterPage implements OnInit {
   }
   goLoginPage(){
     this.navCtrl.navigateBack('');
-  }
-  async presentAlert(message: string) {
-    const alert = await this.alertController.create({
-      header: 'Erreur',
-      message,
-      buttons: ['OK']
-    });
-
-    await alert.present();
   }
 }

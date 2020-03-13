@@ -48,6 +48,7 @@ export class LoginPage implements OnInit {
   tryLogin(value) {
     this.authService.doLogin(value)
         .then(res => {
+          this.validationsForm.reset();
           console.log('login success !');
         }, err => {
           this.errorMessage = err.message;
