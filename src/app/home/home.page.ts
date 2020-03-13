@@ -27,6 +27,7 @@ export class HomePage implements OnInit, OnDestroy {
     userId: string;
     subscriptions: Subscription;
     msgArrIsEmpty: string;
+    itInit: boolean;
 
     constructor(private afs: AngularFirestore,
                 private authService: AuthService,
@@ -41,6 +42,7 @@ export class HomePage implements OnInit, OnDestroy {
         // this.checkAccount();
     }
     ngOnInit() {
+        this.itInit = true;
         this.authService.getPromisedUser().then(user => {
             this.userId = user.uid;
             return user;
@@ -52,7 +54,11 @@ export class HomePage implements OnInit, OnDestroy {
      */
     getPromos(uid: string) {
         this.subscriptions = this.afs.doc<UserFirestore>('users/' + uid).valueChanges().subscribe(action => {
+            if (this.itInit && action !== undefined) {
+                this.presentToast(`<ion-icon name="happy"></ion-icon>   Bienvenue ${action.firstname} ${action.name} !`);
+            }
             if (action !== undefined) {
+                this.itInit = false;
                 this.mapPromos = action.ownedPromos;
                 const arrPromos = Object.keys(action.ownedPromos);
                 if (arrPromos.length > 0) {
@@ -96,10 +102,12 @@ export class HomePage implements OnInit, OnDestroy {
             .scan()
             .then(barcodeData => {
                 if (!barcodeData.cancelled) {
-                    if (barcodeData.format === 'QR_CODE') {
+                    if (barcodeData.format === 'QR_CODE' && barcodeData.text !== '') {
                         this.getScannedPromo(barcodeData.text);
+                    } else if (barcodeData.text === '') {
+                        this.presentAlert('QR codes ilisible');
                     } else {
-                        alert('Désolé, je ne scanne que les QR codes.');
+                        this.presentAlert('Seul les QR codes sont autorisés.');
                     }
                 }
             })
@@ -120,14 +128,14 @@ export class HomePage implements OnInit, OnDestroy {
         this.promosService.getPromo(txtCode).get().then((snapshot: DocumentSnapshot<PromotionFirestore>) => {
             if (snapshot.exists) {
                 if (Object.keys(this.mapPromos).includes(snapshot.id)) {
-                    alert('Vous détenez déjà cette promotion.');
+                    this.presentAlert('Vous détenez déjà cette promotion.');
                 } else if (moment(snapshot.data().dateExpiration.toDate()).isSameOrBefore()) {
-                    alert('Cette promotion est expirée.');
+                    this.presentAlert('Cette promotion est expirée.');
                 } else {
                     this.addScannedPromo(snapshot.ref);
                 }
             } else {
-                alert('Cette promotion n\'existe pas.');
+                this.presentAlert('Cette promotion n\'existe pas.');
             }
         });
     }
@@ -142,7 +150,8 @@ export class HomePage implements OnInit, OnDestroy {
         const newRange = arrRanges.length === 0 ? 0 : Math.max(...arrRanges) + 1;
         this.afs.doc<UserFirestore>('users/' + this.userId).set({
             ownedPromos: {[ref.id]: {range: newRange, used: false}}
-        } as UserFirestore, {merge: true});
+        } as UserFirestore, {merge: true}).then(() => this.presentToast('<ion-icon name="checkmark-done-circle"></ion-icon>' +
+            '   Code promo ajouté avec succès !', 'success'));
     }
 
     ngOnDestroy() {
@@ -157,11 +166,12 @@ export class HomePage implements OnInit, OnDestroy {
 
     copyCode(index: number) {
         this.clipboard.copy(this.promos[index].code).then(() =>
-            this.presentToast('<ion-icon name="copy"></ion-icon>   Code promo copié dans le press-papier'));
+            this.presentToast('<ion-icon name="copy"></ion-icon>   Code promo copié dans le press-papier', 'success'));
     }
-    async presentToast(message: string) {
+    async presentToast(message: string, color?: string) {
         const toast = await this.toastController.create({
             message,
+            color,
             duration: 2000
         });
         toast.present();
@@ -207,6 +217,15 @@ export class HomePage implements OnInit, OnDestroy {
                     }
                 }
             ]
+        });
+
+        await alert.present();
+    }
+    async presentAlert(message: string) {
+        const alert = await this.alertController.create({
+            header: 'Erreur',
+            message,
+            buttons: ['OK']
         });
 
         await alert.present();

@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {AuthService} from '../services/auth.service';
+import {Clipboard} from '@ionic-native/clipboard/ngx';
+import {AlertController} from '@ionic/angular';
 
 @Component({
   selector: 'app-login',
@@ -27,8 +29,8 @@ export class LoginPage implements OnInit {
   constructor(
       private authService: AuthService,
       private formBuilder: FormBuilder,
-      private router: Router
-  ) { }
+      public alertController: AlertController
+  ) {}
 
   ngOnInit() {
     this.validationsForm = this.formBuilder.group({
@@ -51,5 +53,14 @@ export class LoginPage implements OnInit {
           this.errorMessage = err.message;
           console.log(err);
         });
+  }
+  async presentAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Erreur',
+      message,
+      buttons: ['OK']
+    });
+
+    await alert.present();
   }
 }

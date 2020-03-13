@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
-import { NavController } from '@ionic/angular';
+import {AlertController, NavController} from '@ionic/angular';
+import {Clipboard} from '@ionic-native/clipboard/ngx';
 
 @Component({
   selector: 'app-register',
@@ -26,7 +27,8 @@ export class RegisterPage implements OnInit {
 
   constructor(private navCtrl: NavController,
               private authService: AuthService,
-              private formBuilder: FormBuilder) { }
+              private formBuilder: FormBuilder,
+              public alertController: AlertController) { }
 
   ngOnInit() {
     this.validationsForm = this.formBuilder.group({
@@ -55,5 +57,13 @@ export class RegisterPage implements OnInit {
   goLoginPage(){
     this.navCtrl.navigateBack('');
   }
+  async presentAlert(message: string) {
+    const alert = await this.alertController.create({
+      header: 'Erreur',
+      message,
+      buttons: ['OK']
+    });
 
+    await alert.present();
+  }
 }

@@ -26,7 +26,7 @@ export class AuthService {
                 });
                 // this.SetUserData(result.user);
             }).catch((error) => {
-                window.alert(error.message);
+                console.log(error.message);
             });
     }
 
@@ -50,7 +50,7 @@ export class AuthService {
                 // this.SendVerificationMail();
                 // this.SetUserData(result.user);
             }).catch((error) => {
-                window.alert(error.message);
+                console.log(error.message);
             });
     }
 
