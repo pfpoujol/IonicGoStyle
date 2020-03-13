@@ -53,7 +53,7 @@ export class RegisterPage implements OnInit {
           this.successMessage = '';
         });
   }
-  goLoginPage(){
-    this.navCtrl.navigateBack('');
+  goLoginPage() {
+    this.authService.doLogout();
   }
 }
