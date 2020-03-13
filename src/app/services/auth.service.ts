@@ -19,7 +19,7 @@ export class AuthService {
     }
 
     doLogin(value) {
-        return this.afAuth.auth.signInWithEmailAndPassword(value.email, value.password)
+        return this.afAuth.auth.signInWithEmailAndPassword(value.email.toLowerCase().trim(), value.password)
             .then((result) => {
                 this.ngZone.run(() => {
                     this.router.navigate(['home']);
@@ -43,7 +43,7 @@ export class AuthService {
     }
 
     registerUser(value) {
-        return this.afAuth.auth.createUserWithEmailAndPassword(value.email, value.password)
+        return this.afAuth.auth.createUserWithEmailAndPassword(value.email.toLowerCase().trim(), value.password)
             .then((result) => {
                 /* Call the SendVerificaitonMail() function when new user sign
                 up and returns promise */

@@ -73,7 +73,7 @@ export class HomePage implements OnInit, OnDestroy {
                     this.promos = [];
                 }
             } else {
-                this.msgArrIsEmpty = 'Vous ne possédez aucune promotion.';
+                this.msgArrIsEmpty = 'Vous devez compléter votre compte.';
                 this.presentAlertPrompt(this.userId);
             }
 
@@ -194,11 +194,16 @@ export class HomePage implements OnInit, OnDestroy {
                 }, {
                     text: 'Enregistrer',
                     handler: (data) => {
-                        this.afs.doc<UserFirestore>('users/' + this.userId).set({
-                            name: data.name,
-                            firstname: data.firstname,
-                            ownedPromos: {}
-                        } as UserFirestore);
+                        if (data.name.trim() !== '' && data.firstname.trim() !== '') {
+                            this.afs.doc<UserFirestore>('users/' + this.userId).set({
+                                name: data.name.trim(),
+                                firstname: data.firstname.trim(),
+                                ownedPromos: {}
+                            } as UserFirestore);
+                        } else {
+                            this.presentAlertPrompt(this.userId);
+                        }
+
                     }
                 }
             ]
