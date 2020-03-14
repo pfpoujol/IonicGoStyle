@@ -8,7 +8,6 @@
 
 ### Structure des données
 
-Cloud Firestore
-Base de données NoSQL type Document.
+Cloud Firestore, base de données NoSQL type Document.
 
 ![sequence diagram](https://github.com/pfpoujol/IonicGoStyle/blob/master/bdd%20firestore.png?raw=true)
