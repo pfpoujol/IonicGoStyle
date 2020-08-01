@@ -24,9 +24,9 @@ export class AuthService {
                 this.ngZone.run(() => {
                     this.router.navigate(['home']);
                 });
-                // this.SetUserData(result.user);
+                return result;
             }).catch((error) => {
-                console.log(error.message);
+                return error;
             });
     }
 

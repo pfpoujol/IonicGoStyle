@@ -48,8 +48,32 @@ export class LoginPage implements OnInit {
   tryLogin(value) {
     this.authService.doLogin(value)
         .then(res => {
+          this.errorMessage = '';
           this.validationsForm.reset();
-          console.log('login success !');
+          if (res.code) {
+            switch (res.code) {
+              case 'auth/invalid-email': {
+                this.errorMessage = 'L\'adresse email est invalide.';
+                break;
+              }
+              case 'auth/wrong-password': {
+                this.errorMessage = 'Le mot de passe saisi est invalide.';
+                break;
+              }
+              case 'auth/user-not-found': {
+                this.errorMessage = 'Il n\'y a pas d\'utilisateur correspondant à cet identifiant.';
+                break;
+              }
+              default: {
+                this.errorMessage = 'Erreur inconnue.';
+                break;
+              }
+            }
+          } else if (res.user) {
+            if (res.operationType === 'signIn') {
+              console.log('login success !');
+            }
+          }
         }, err => {
           this.errorMessage = err.message;
           console.log(err);
