@@ -16,9 +16,6 @@ export class AuthService {
                 public navController: NavController
     ) {
     }
-    isLoggedIn(): Observable<firebase.User | null> {
-        return this.afAuth.authState;
-    }
     doLogin(value) {
         return this.afAuth.auth.signInWithEmailAndPassword(value.email.toLowerCase().trim(), value.password)
             .then((result) => {
@@ -32,14 +29,8 @@ export class AuthService {
     }
 
     doLogout() {
-        // window.localStorage.removeItem('firebase:session::<host-name>');
-        // firebase.auth().signOut();
         return this.afAuth.auth.signOut().then(() => {
-            // localStorage.removeItem('user');
             this.navController.navigateRoot(['login']);
-            /*then(() => this.router.routeReuseStrategy.shouldReuseRoute = function() {
-                return false;
-            });*/
         });
     }
 

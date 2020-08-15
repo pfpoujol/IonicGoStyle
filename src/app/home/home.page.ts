@@ -4,12 +4,11 @@ import {PromosService} from '../services/promos.service';
 import {Promotion} from '../models/Promotion';
 import {User} from '../models/User';
 import {UserFirestore} from '../models/firestore/UserFirestore';
-import {AngularFirestore, DocumentReference, DocumentSnapshot} from '@angular/fire/firestore';
+import {AngularFirestore} from '@angular/fire/firestore';
 import {Subscription} from 'rxjs';
 import {Clipboard} from '@ionic-native/clipboard/ngx';
 import {BarcodeScanner} from '@ionic-native/barcode-scanner/ngx';
 import * as moment from 'moment';
-import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
 import {ToastController} from '@ionic/angular';
 import {AlertController} from '@ionic/angular';
 
@@ -66,7 +65,7 @@ export class HomePage implements OnInit, OnDestroy {
                 this.mapPromos = action.ownedPromos;
                 this.promiseCompletUser.then(isComplet => {
                     if (isComplet) {
-                        const subscription = this.promosService.getPromosAPI(uid).subscribe((promotions) => {
+                        const subscription = this.promosService.getPromos(uid).subscribe((promotions) => {
                             const promosEnCours = promotions.filter(promo => moment(promo.dateExpiration).isAfter());
                             if (promosEnCours.length === 0) {
                                 this.promos = [];
@@ -98,7 +97,7 @@ export class HomePage implements OnInit, OnDestroy {
                 if (!barcodeData.cancelled) {
                     if (barcodeData.format === 'QR_CODE' && barcodeData.text !== '') {
                         // this.getScannedPromo(barcodeData.text);
-                        const subscription = this.promosService.addPromoToUserAPI(barcodeData.text, this.userId).subscribe(() => {
+                        const subscription = this.promosService.addPromoToUser(barcodeData.text, this.userId).subscribe(() => {
                             this.presentToast('<ion-icon name="checkmark-done-circle"></ion-icon>' +
                                 '   Code promo ajouté avec succès !', 'success');
                         }, (response) => {
