@@ -12,17 +12,18 @@ import {NavController} from '@ionic/angular';
 })
 export class AuthService {
     constructor(public afAuth: AngularFireAuth,
-                private router: Router,
                 public ngZone: NgZone,
                 public navController: NavController
     ) {
     }
-
+    isLoggedIn(): Observable<firebase.User | null> {
+        return this.afAuth.authState;
+    }
     doLogin(value) {
         return this.afAuth.auth.signInWithEmailAndPassword(value.email.toLowerCase().trim(), value.password)
             .then((result) => {
                 this.ngZone.run(() => {
-                    this.router.navigate(['home']);
+                    this.navController.navigateRoot(['home']);
                 });
                 return result;
             }).catch((error) => {

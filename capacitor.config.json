@@ -1,6 +1,6 @@
 {
-  "appId": "io.ionic.starter",
-  "appName": "IonicGoStyle",
+  "appId": "com.epsi.gostyle",
+  "appName": "GoStyle",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "www",

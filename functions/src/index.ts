@@ -2,6 +2,13 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
+import * as cors from 'cors';
+
+interface Promotion {
+    code: string;
+    dateExpiration: Date;
+    description: string;
+}
 
 admin.initializeApp(functions.config().firebase);
 
@@ -10,6 +17,8 @@ const app = express();
 const main = express();
 
 //add the path to receive request and set json as bodyParser to process the body
+app.use(cors({origin: true}));
+main.use(cors({origin: true}));
 main.use('/v1', app);
 main.use(bodyParser.json());
 main.use(bodyParser.urlencoded({extended: false}));
@@ -22,38 +31,24 @@ const promoCollection = 'promotions';
 //define google cloud function name
 export const webServices = functions.region('europe-west1').https.onRequest(main);
 
-
 app.get('/promotions/:promoId', (req, res) => {
-
     const promoId = req.params.promoId;
     db.collection(promoCollection).doc(promoId).get()
         .then(promo => {
             if (!promo.exists) {
-                res.status(400).json({
-                    status : 'error',
-                    message: 'Promotion introuvable.'
-                });
+                res.status(400).send('Promotion introuvable.');
             } else {
                 res.status(200).json({
-                    status : "success",
-                    data: {
-                        code: promo.data()?.code,
-                        dateExpiration: promo.data()?.dateExpiration.toDate(),
-                        description: promo.data()?.description
-                    }
+                    code: promo.data()?.code,
+                    dateExpiration: promo.data()?.dateExpiration.toDate(),
+                    description: promo.data()?.description
                 });
             }
         })
         .catch(error => res.status(500).send(error));
 });
 
-interface Promotion {
-    code: string;
-    dateExpiration: Date;
-    description: string;
-}
-
-app.post('/promotions',  (req, res) => {
+app.post('/promotions', (req, res) => {
     try {
         const body = req.body;
         const dateExpiration = new Date(body.dateExpiration);
@@ -92,18 +87,12 @@ app.get('/users/:userId', (req, res) => {
     db.collection(userCollection).doc(userId).get()
         .then(user => {
             if (!user.exists) {
-                res.status(400).json({
-                    status : 'error',
-                    message: 'Utilisateur introuvable.'
-                });
+                res.status(400).send('Utilisateur introuvable.');
             }
             res.status(200).json({
-                status : "success",
-                data: {
-                    uid: user.id,
-                    name: user.data()?.name,
-                    firstname: user.data()?.firstname
-                }
+                uid: user.id,
+                name: user.data()?.name,
+                firstname: user.data()?.firstname
             });
         }).catch(error => res.status(500).send(error));
 });
@@ -113,14 +102,11 @@ app.get('/users/:userId/promotions', (req, res) => {
     db.collection(userCollection).doc(userId).get()
         .then(user => {
             if (!user.exists) {
-                res.status(400).json({
-                    status : 'error',
-                    message: 'Utilisateur introuvable.'
-                });
+                res.status(400).send('Utilisateur introuvable.');
             }
             const promises = Object.keys(user.data()?.ownedPromos).map(promoId => db.collection(promoCollection).doc(promoId).get());
             Promise.all(promises).then(promosSnapshot => {
-                const promotions: any[] = [];
+                const promotions: Promotion[] = [];
                 promosSnapshot.forEach(promo => {
                     if (promo.exists) {
                         promotions.push({
@@ -130,10 +116,7 @@ app.get('/users/:userId/promotions', (req, res) => {
                         });
                     }
                 });
-                res.status(200).json({
-                    status : "success",
-                    data: promotions
-                });
+                res.status(200).json(promotions);
             }).catch(error => res.status(500).send(error));
         }).catch(error => res.status(500).send(error));
 });
@@ -141,24 +124,24 @@ app.get('/users/:userId/promotions', (req, res) => {
 app.put('/users/:userId', async (req, res) => {
     const body = req.body;
     if (!body.hasOwnProperty('promo')) {
-        res.status(400).json({error: 'Mauvais argument.'});
+        res.status(418).send('Mauvais argument.');
     } else {
         db.collection(promoCollection).doc(body.promo).get().then(promo => {
             if (!promo.exists) {
-                res.status(400).json({error: 'Cette promotion n\'existe pas.'});
+                res.status(404).send('Cette promotion n\'existe pas.');
             } else {
                 const dateExpiration = promo.data()?.dateExpiration.toDate();
                 const dateNow = new Date();
                 if (dateNow > dateExpiration) {
-                    res.status(400).json({error: 'Cette promotion est expirée.'});
+                    res.status(418).send('Cette promotion est expirée.');
                 } else {
                     db.collection(userCollection).doc(req.params.userId).get().then(user => {
                         if (!user.exists) {
-                            res.status(400).json({error: 'Cette utilisateur n\'existe pas.'});
+                            res.status(404).send('Cette utilisateur n\'existe pas.');
                         } else {
                             const promos = Object.keys(user.data()?.ownedPromos);
                             if (promos.includes(body.promo)) {
-                                res.status(400).json({error: 'Vous détenez déjà cette promotion.'});
+                                res.status(418).send('Vous détenez déjà cette promotion.');
                             } else {
                                 db.collection(userCollection).doc(req.params.userId).set({
                                     ownedPromos: {
@@ -174,5 +157,4 @@ app.put('/users/:userId', async (req, res) => {
             }
         }).catch(error => res.status(500).send(error));
     }
-
 });

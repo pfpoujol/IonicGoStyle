@@ -5,13 +5,12 @@ import {Promotion} from '../models/Promotion';
 import {User} from '../models/User';
 import {UserFirestore} from '../models/firestore/UserFirestore';
 import {AngularFirestore, DocumentReference, DocumentSnapshot} from '@angular/fire/firestore';
-import {map} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
 import {Clipboard} from '@ionic-native/clipboard/ngx';
 import {BarcodeScanner} from '@ionic-native/barcode-scanner/ngx';
 import * as moment from 'moment';
 import {PromotionFirestore} from '../models/firestore/PromotionFirestore';
-import { ToastController } from '@ionic/angular';
+import {ToastController} from '@ionic/angular';
 import {AlertController} from '@ionic/angular';
 
 
@@ -28,6 +27,7 @@ export class HomePage implements OnInit, OnDestroy {
     subscriptions: Subscription;
     msgArrIsEmpty: string;
     itInit: boolean;
+    promiseCompletUser: Promise<boolean>;
 
     constructor(private afs: AngularFirestore,
                 private authService: AuthService,
@@ -37,11 +37,13 @@ export class HomePage implements OnInit, OnDestroy {
                 public alertController: AlertController,
                 private toastController: ToastController) {
     }
+
     ionViewWillEnter() {
         this.msgArrIsEmpty = '';
-        // this.checkAccount();
     }
+
     ngOnInit() {
+        this.promiseCompletUser = Promise.resolve(true);
         this.itInit = true;
         this.authService.getPromisedUser().then(user => {
             this.userId = user.uid;
@@ -52,7 +54,7 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     /**
-     * Affichage message de bienvenue, et optention des promos si infos utilisateur completés.
+     * Affichage message de bienvenue, et chargement des promos si infos utilisateur completés.
      */
     initUserPromos(uid: string) {
         this.subscriptions = this.afs.doc<UserFirestore>('users/' + uid).valueChanges().subscribe(action => {
@@ -62,27 +64,32 @@ export class HomePage implements OnInit, OnDestroy {
             if (action !== undefined) {
                 this.itInit = false;
                 this.mapPromos = action.ownedPromos;
-                const subscription = this.promosService.getPromosAPI(uid).subscribe(response => {
-                    if (response.status === 'success') {
-                        this.promos = response.data.sort((a, b) => a.dateExpiration.getTime() - b.dateExpiration.getTime());
-                        if (response.data.length === 0) {
-                            this.msgArrIsEmpty = 'Vous ne possédez aucune promotion en cours.';
-                        }
-                    } else if (response.status === 'error') {
-                        this.presentAlert(response.message);
+                this.promiseCompletUser.then(isComplet => {
+                    if (isComplet) {
+                        const subscription = this.promosService.getPromosAPI(uid).subscribe((promotions) => {
+                            const promosEnCours = promotions.filter(promo => moment(promo.dateExpiration).isAfter());
+                            if (promosEnCours.length === 0) {
+                                this.promos = [];
+                                this.msgArrIsEmpty = 'Vous ne possédez aucune promotion en cours.';
+                            } else {
+                                this.promos = promosEnCours.sort((a, b) => {
+                                    return new Date(a.dateExpiration).getTime() - new Date(b.dateExpiration).getTime();
+                                });
+                            }
+                        }, (response) => {
+                            console.log(response);
+                            this.presentAlert(response.error);
+                        });
+                        this.subscriptions.add(subscription);
                     }
                 });
-                this.subscriptions.add(subscription);
             } else {
+                this.promiseCompletUser = Promise.resolve(false);
                 this.msgArrIsEmpty = 'Vous devez compléter votre compte.';
                 this.presentAlertPrompt(this.userId);
             }
         });
     }
-
-    /**
-     * Obtention des infos de l'utilisateur depuis Firebase Authentification + Cloud FireStore
-     */
 
     scanCode() {
         this.barcodeScanner
@@ -90,9 +97,17 @@ export class HomePage implements OnInit, OnDestroy {
             .then(barcodeData => {
                 if (!barcodeData.cancelled) {
                     if (barcodeData.format === 'QR_CODE' && barcodeData.text !== '') {
-                        this.getScannedPromo(barcodeData.text);
+                        // this.getScannedPromo(barcodeData.text);
+                        const subscription = this.promosService.addPromoToUserAPI(barcodeData.text, this.userId).subscribe(() => {
+                            this.presentToast('<ion-icon name="checkmark-done-circle"></ion-icon>' +
+                                '   Code promo ajouté avec succès !', 'success');
+                        }, (response) => {
+                            console.log(response);
+                            this.presentAlert(response.error);
+                        });
+                        this.subscriptions.add(subscription);
                     } else if (barcodeData.text === '') {
-                        this.presentAlert('QR codes ilisible');
+                        this.presentAlert('QR codes ilisible.');
                     } else {
                         this.presentAlert('Seul les QR codes sont autorisés.');
                     }
@@ -100,45 +115,7 @@ export class HomePage implements OnInit, OnDestroy {
             })
             .catch(err => {
                 console.log('Error', err);
-                // TODO: remove
-                // this.getScannedPromo('KISSKISS');
-                // this.getScannedPromo('Extrda10');
-                // this.getScannedPromo('KADO20');
             });
-    }
-
-    /**
-     * recupère le text du qrcode, vérifie s'il exite en bdd, s'il n'est pas expiré et s'il n'a pas déjà été scanné par l'utilisateur.
-     * Si c'est OK, appel la fonction suivante addScannedPromo()
-     */
-    getScannedPromo(txtCode: string) {
-        this.promosService.getPromo(txtCode).get().then((snapshot: DocumentSnapshot<PromotionFirestore>) => {
-            if (snapshot.exists) {
-                if (Object.keys(this.mapPromos).includes(snapshot.id)) {
-                    this.presentAlert('Vous détenez déjà cette promotion.');
-                } else if (moment(snapshot.data().dateExpiration.toDate()).isSameOrBefore()) {
-                    this.presentAlert('Cette promotion est expirée.');
-                } else {
-                    this.addScannedPromo(snapshot.ref);
-                }
-            } else {
-                this.presentAlert('Cette promotion n\'existe pas.');
-            }
-        });
-    }
-
-    /**
-     * Ajout de la promotion à l'utilisateur, en tant qu'attribut supplémentaire de l'objet ownedPromos (data type Map)
-     */
-    addScannedPromo(ref: DocumentReference) {
-        const arrKeys: Array<string> = Object.keys(this.mapPromos);
-        // @ts-ignore
-        const arrRanges: Array<number> = arrKeys.flatMap(key => [this.mapPromos[key].range]);
-        const newRange = arrRanges.length === 0 ? 0 : Math.max(...arrRanges) + 1;
-        this.afs.doc<UserFirestore>('users/' + this.userId).set({
-            ownedPromos: {[ref.id]: {range: newRange, used: false}}
-        } as UserFirestore, {merge: true}).then(() => this.presentToast('<ion-icon name="checkmark-done-circle"></ion-icon>' +
-            '   Code promo ajouté avec succès !', 'success'));
     }
 
     ngOnDestroy() {
@@ -148,13 +125,13 @@ export class HomePage implements OnInit, OnDestroy {
     logout() {
         this.subscriptions.unsubscribe();
         this.authService.doLogout();
-        // this.router.navigate(['login']);
     }
 
     copyCode(index: number) {
         this.clipboard.copy(this.promos[index].code).then(() =>
             this.presentToast('<ion-icon name="copy"></ion-icon>   Code promo copié dans le press-papier', 'success'));
     }
+
     async presentToast(message: string, color?: string) {
         const toast = await this.toastController.create({
             message,
@@ -163,6 +140,7 @@ export class HomePage implements OnInit, OnDestroy {
         });
         toast.present();
     }
+
     async presentAlertPrompt(userId: string) {
         const alert = await this.alertController.create({
             backdropDismiss: false,
@@ -192,11 +170,11 @@ export class HomePage implements OnInit, OnDestroy {
                     text: 'Enregistrer',
                     handler: (data) => {
                         if (data.name.trim() !== '' && data.firstname.trim() !== '') {
-                            this.afs.doc<UserFirestore>('users/' + this.userId).set({
+                            this.promiseCompletUser = this.afs.doc<UserFirestore>('users/' + this.userId).set({
                                 name: data.name.trim(),
                                 firstname: data.firstname.trim(),
                                 ownedPromos: {}
-                            } as UserFirestore);
+                            } as UserFirestore).then(() => true);
                         } else {
                             this.presentAlertPrompt(this.userId);
                         }
@@ -208,6 +186,7 @@ export class HomePage implements OnInit, OnDestroy {
 
         await alert.present();
     }
+
     async presentAlert(message: string) {
         const alert = await this.alertController.create({
             header: 'Erreur',

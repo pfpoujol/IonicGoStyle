@@ -9,20 +9,13 @@ import {Promotion} from '../models/Promotion';
 @Injectable({
     providedIn: 'root'
 })
-export interface ResponseSuccess {
-    status: 'success';
-    data: Array<Promotion>;
-}
-export interface ResponseError {
-    status: 'error';
-    message: string;
-}
+
 export class PromosService {
 
     constructor(private http: HttpClient, private firestore: AngularFirestore) {
     }
 
-    getPromoAFS(codePromo: string): DocumentReference {
+    getPromo(codePromo: string): DocumentReference {
         return this.firestore.collection('promotions').doc(codePromo).ref;
     }
 
@@ -33,8 +26,13 @@ export class PromosService {
             .snapshotChanges();
     }
 
-    getPromosAPI(uid: string): Observable<ResponseSuccess | ResponseError> {
+    getPromosAPI(uid: string): Observable<Array<Promotion>> {
         const url = 'https://europe-west1-mspr-gostyleapp.cloudfunctions.net/webServices/v1/users/' + uid + '/promotions';
-        return this.http.get<ResponseSuccess | ResponseError>(url);
+        return this.http.get<Array<Promotion>>(url);
+    }
+    addPromoToUserAPI(promo: string, uid: string) {
+        // https://europe-west1-mspr-gostyleapp.cloudfunctions.net/webServices/v1/users/goEdwr6nOpN0oyiAGWvs9vFWaSj1
+        const url = 'https://europe-west1-mspr-gostyleapp.cloudfunctions.net/webServices/v1/users/' + uid;
+        return this.http.put(url, {promo});
     }
 }
