@@ -22,17 +22,20 @@ const promoCollection = 'promotions';
 //define google cloud function name
 export const webServices = functions.region('europe-west1').https.onRequest(main);
 
-// https://europe-west1-mspr-gostyleapp.cloudfunctions.net/webServices/api/promotions/Extra10
+
 app.get('/promotions/:promoId', (req, res) => {
 
     const promoId = req.params.promoId;
     db.collection(promoCollection).doc(promoId).get()
         .then(promo => {
             if (!promo.exists) {
-                res.status(400).json({error: 'Promotion introuvable.'});
+                res.status(400).json({
+                    status : 'error',
+                    message: 'Promotion introuvable.'
+                });
             } else {
                 res.status(200).json({
-                    id: promo.id,
+                    status : "success",
                     data: {
                         code: promo.data()?.code,
                         dateExpiration: promo.data()?.dateExpiration.toDate(),
@@ -63,7 +66,6 @@ app.post('/promotions',  (req, res) => {
                 description: body.description
             };
             db.collection(promoCollection).doc(promo.code).get().then(doc => {
-                console.log(doc)
                 if (doc.exists) {
                     res.status(400).send('Cette promotion existe déjà.');
                 } else {
@@ -76,14 +78,13 @@ app.post('/promotions',  (req, res) => {
 
         }
     } catch (error) {
-        console.log('error');
         res.status(400).send('La promotion doit contenir les valeurs suivantes : "code", "dateExpiration", "description"');
     }
 });
 
 app.delete('/promotions/:promoId', async (req, res) => {
     await db.collection(promoCollection).doc(req.params.promoId).delete();
-    res.status(200).send('La promotion a bien été supprimée !');
+    res.status(204).send({});
 });
 
 app.get('/users/:userId', (req, res) => {
@@ -91,14 +92,17 @@ app.get('/users/:userId', (req, res) => {
     db.collection(userCollection).doc(userId).get()
         .then(user => {
             if (!user.exists) {
-                res.status(400).json({error: 'Utilisateur introuvable.'});
+                res.status(400).json({
+                    status : 'error',
+                    message: 'Utilisateur introuvable.'
+                });
             }
             res.status(200).json({
-                id: user.id,
+                status : "success",
                 data: {
                     uid: user.id,
                     name: user.data()?.name,
-                    firstname: user.data()?.firstname,
+                    firstname: user.data()?.firstname
                 }
             });
         }).catch(error => res.status(500).send(error));
@@ -109,7 +113,10 @@ app.get('/users/:userId/promotions', (req, res) => {
     db.collection(userCollection).doc(userId).get()
         .then(user => {
             if (!user.exists) {
-                res.status(400).json({error: 'Utilisateur introuvable.'});
+                res.status(400).json({
+                    status : 'error',
+                    message: 'Utilisateur introuvable.'
+                });
             }
             const promises = Object.keys(user.data()?.ownedPromos).map(promoId => db.collection(promoCollection).doc(promoId).get());
             Promise.all(promises).then(promosSnapshot => {
@@ -117,16 +124,16 @@ app.get('/users/:userId/promotions', (req, res) => {
                 promosSnapshot.forEach(promo => {
                     if (promo.exists) {
                         promotions.push({
-                            id: promo.id,
-                            data: {
-                                code: promo.data()?.code,
-                                dateExpiration: promo.data()?.dateExpiration.toDate(),
-                                description: promo.data()?.description
-                            }
+                            code: promo.data()?.code,
+                            dateExpiration: promo.data()?.dateExpiration.toDate(),
+                            description: promo.data()?.description
                         });
                     }
                 });
-                res.status(200).json(promotions);
+                res.status(200).json({
+                    status : "success",
+                    data: promotions
+                });
             }).catch(error => res.status(500).send(error));
         }).catch(error => res.status(500).send(error));
 });

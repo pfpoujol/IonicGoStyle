@@ -46,13 +46,15 @@ export class HomePage implements OnInit, OnDestroy {
         this.authService.getPromisedUser().then(user => {
             this.userId = user.uid;
             return user;
-        }).then(user => this.getPromos(user.uid));
+        }).then(user => {
+            this.initUserPromos(user.uid);
+        });
     }
 
     /**
-     * Obtention de la liste des promotions de l'utilisateur ordonnée par date d'expiration
+     * Affichage message de bienvenue, et optention des promos si infos utilisateur completés.
      */
-    getPromos(uid: string) {
+    initUserPromos(uid: string) {
         this.subscriptions = this.afs.doc<UserFirestore>('users/' + uid).valueChanges().subscribe(action => {
             if (this.itInit && action !== undefined) {
                 this.presentToast(`<ion-icon name="happy"></ion-icon>   Bienvenue ${action.firstname} ${action.name} !`);
@@ -60,42 +62,27 @@ export class HomePage implements OnInit, OnDestroy {
             if (action !== undefined) {
                 this.itInit = false;
                 this.mapPromos = action.ownedPromos;
-                const arrPromos = Object.keys(action.ownedPromos);
-                if (arrPromos.length > 0) {
-                    const subscription = this.promosService.getPromos(arrPromos).pipe(
-                        map(actions => actions.map(a => {
-                            return {
-                                code: a.payload.doc.id,
-                                dateExpiration: a.payload.doc.data().dateExpiration.toDate(),
-                                description: a.payload.doc.data().description
-                            };
-                        }))
-                    ).subscribe(promos => {
-                        this.promos = promos;
-                    });
-                    this.subscriptions.add(subscription);
-                } else {
-                    this.msgArrIsEmpty = 'Vous ne possédez aucune promotion.';
-                    this.promos = [];
-                }
+                const subscription = this.promosService.getPromosAPI(uid).subscribe(response => {
+                    if (response.status === 'success') {
+                        this.promos = response.data.sort((a, b) => a.dateExpiration.getTime() - b.dateExpiration.getTime());
+                        if (response.data.length === 0) {
+                            this.msgArrIsEmpty = 'Vous ne possédez aucune promotion en cours.';
+                        }
+                    } else if (response.status === 'error') {
+                        this.presentAlert(response.message);
+                    }
+                });
+                this.subscriptions.add(subscription);
             } else {
                 this.msgArrIsEmpty = 'Vous devez compléter votre compte.';
                 this.presentAlertPrompt(this.userId);
             }
-
         });
     }
 
     /**
      * Obtention des infos de l'utilisateur depuis Firebase Authentification + Cloud FireStore
      */
-    checkAccount() {
-        this.afs.doc('users/' + this.userId).ref.get().then((snapshot: DocumentSnapshot<UserFirestore>) => {
-            if ( !snapshot.exists ) {
-                this.presentAlertPrompt(this.userId);
-            }
-        });
-    }
 
     scanCode() {
         this.barcodeScanner
