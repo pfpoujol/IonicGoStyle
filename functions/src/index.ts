@@ -36,7 +36,7 @@ app.get('/promotions/:promoId', (req, res) => {
     db.collection(promoCollection).doc(promoId).get()
         .then(promo => {
             if (!promo.exists) {
-                res.status(400).send('Promotion introuvable.');
+                res.status(404).send('Promotion introuvable.');
             } else {
                 res.status(200).json({
                     code: promo.data()?.code,
@@ -49,32 +49,29 @@ app.get('/promotions/:promoId', (req, res) => {
 });
 
 app.post('/promotions', (req, res) => {
-    try {
-        const body = req.body;
-        const dateExpiration = new Date(body.dateExpiration);
-        if (isNaN(dateExpiration.getTime())) {  // d.valueOf() could also work
-            res.status(400).send('Argument "dateExpiration" erroné, ce n\'est pas un format de date valide.');
+    const body = req.body;
+    if (!body.hasOwnProperty('code') || !body.hasOwnProperty('dateExpiration') || !body.hasOwnProperty('description')) {
+        return res.status(400).send('La requête doit contenir les valeurs suivantes : "code", "dateExpiration", "description"');
+    }
+    const dateExpiration = new Date(body.dateExpiration);
+    if (isNaN(dateExpiration.getTime())) {  // d.valueOf() could also work
+        return res.status(400).send('Argument "dateExpiration" erroné, ce n\'est pas un format de date valide.');
+    }
+    const promo: Promotion = {
+        code: body.code,
+        dateExpiration,
+        description: body.description
+    };
+    return db.collection(promoCollection).doc(promo.code).get().then(doc => {
+        if (doc.exists) {
+            res.status(400).send('Cette promotion existe déjà.');
         } else {
-            const promo: Promotion = {
-                code: body.code,
-                dateExpiration,
-                description: body.description
-            };
-            db.collection(promoCollection).doc(promo.code).get().then(doc => {
-                if (doc.exists) {
-                    res.status(400).send('Cette promotion existe déjà.');
-                } else {
-                    db.collection(promoCollection).doc(body.code).set(promo)
-                        .then(() => res.status(201).send(`Nouvelle promo ajoutée : ${body.code}`))
-                        .catch(error => res.status(500).send(error));
-
-                }
-            }).catch(error => res.status(500).send(error));
+            db.collection(promoCollection).doc(body.code).set(promo)
+                .then(() => res.status(201).send(`Promotion crée avec succès : ${body.code}`))
+                .catch(error => res.status(500).send(error));
 
         }
-    } catch (error) {
-        res.status(400).send('La promotion doit contenir les valeurs suivantes : "code", "dateExpiration", "description"');
-    }
+    }).catch(error => res.status(500).send(error));
 });
 
 app.delete('/promotions/:promoId', async (req, res) => {
@@ -87,7 +84,7 @@ app.get('/users/:userId', (req, res) => {
     db.collection(userCollection).doc(userId).get()
         .then(user => {
             if (!user.exists) {
-                res.status(400).send('Utilisateur introuvable.');
+                res.status(404).send('Utilisateur introuvable.');
             }
             res.status(200).json({
                 uid: user.id,
@@ -102,7 +99,7 @@ app.get('/users/:userId/promotions', (req, res) => {
     db.collection(userCollection).doc(userId).get()
         .then(user => {
             if (!user.exists) {
-                res.status(400).send('Utilisateur introuvable.');
+                res.status(404).send('Utilisateur introuvable.');
             }
             const promises = Object.keys(user.data()?.ownedPromos).map(promoId => db.collection(promoCollection).doc(promoId).get());
             Promise.all(promises).then(promosSnapshot => {
@@ -124,20 +121,20 @@ app.get('/users/:userId/promotions', (req, res) => {
 app.put('/users/:userId', async (req, res) => {
     const body = req.body;
     if (!body.hasOwnProperty('promo')) {
-        res.status(418).send('Mauvais argument.');
+        res.status(418).send('La requête doit contenir la valeur suivante : "promo"');
     } else {
         db.collection(promoCollection).doc(body.promo).get().then(promo => {
             if (!promo.exists) {
-                res.status(404).send('Cette promotion n\'existe pas.');
+                res.status(400).send('La promotion que vous réclamez n\'existe pas.');
             } else {
                 const dateExpiration = promo.data()?.dateExpiration.toDate();
                 const dateNow = new Date();
                 if (dateNow > dateExpiration) {
-                    res.status(418).send('Cette promotion est expirée.');
+                    res.status(418).send('La promotion que vous réclamez est expirée.');
                 } else {
                     db.collection(userCollection).doc(req.params.userId).get().then(user => {
                         if (!user.exists) {
-                            res.status(404).send('Cette utilisateur n\'existe pas.');
+                            res.status(404).send('Utilisateur introuvable.');
                         } else {
                             const promos = Object.keys(user.data()?.ownedPromos);
                             if (promos.includes(body.promo)) {
