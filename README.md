@@ -11,3 +11,7 @@
 Cloud Firestore, base de données NoSQL type Document.
 
 ![sequence diagram](https://github.com/pfpoujol/IonicGoStyle/blob/master/bdd%20firestore.png?raw=true)
+
+### WebServices documentation
+
+https://documenter.getpostman.com/view/11412410/T1LQfQjz
