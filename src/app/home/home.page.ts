@@ -11,6 +11,7 @@ import {BarcodeScanner} from '@ionic-native/barcode-scanner/ngx';
 import * as moment from 'moment';
 import {ToastController} from '@ionic/angular';
 import {AlertController} from '@ionic/angular';
+import {HttpErrorResponse} from '@angular/common/http';
 
 
 @Component({
@@ -100,7 +101,7 @@ export class HomePage implements OnInit, OnDestroy {
                         const subscription = this.promosService.addPromoToUser(barcodeData.text, this.userId).subscribe(() => {
                             this.presentToast('<ion-icon name="checkmark-done-circle"></ion-icon>' +
                                 '   Code promo ajouté avec succès !', 'success');
-                        }, (response) => {
+                        }, (response: HttpErrorResponse) => {
                             console.log(response);
                             this.presentAlert(response.error);
                         });

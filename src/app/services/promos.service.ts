@@ -16,7 +16,7 @@ export class PromosService {
         const url = 'https://europe-west1-mspr-gostyleapp.cloudfunctions.net/webServices/v1/users/' + uid + '/promotions';
         return this.http.get<Array<Promotion>>(url);
     }
-    addPromoToUser(promo: string, uid: string) {
+    addPromoToUser(promo: string, uid: string): Observable<{}> {
         const url = 'https://europe-west1-mspr-gostyleapp.cloudfunctions.net/webServices/v1/users/' + uid;
         return this.http.put(url, {promo});
     }
