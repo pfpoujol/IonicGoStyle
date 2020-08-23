@@ -11,6 +11,7 @@ import {HttpRequestInterceptorMock} from '../services/http-request-interceptor-m
 import {HttpClientTestingModule} from '@angular/common/http/testing';
 
 import {RouterModule} from '@angular/router';
+import {By, element} from 'protractor';
 
 class MockAuthService implements Partial<AuthService> {
   getUid(): Promise<string> {
@@ -50,10 +51,34 @@ describe('HomePage', () => {
 
     fixture = TestBed.createComponent(HomePage);
     component = fixture.componentInstance;
+
     fixture.detectChanges();
   }));
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should display coupons', () => {
+    component.promos = [
+        {
+      code: 'SUPER50',
+      dateExpiration: new Date('2020-09-08T22:00:00.000Z'),
+      description: 'Pour un super client 50% sur le catalogue'
+    },
+      {
+        code: 'KADO20',
+        dateExpiration: new Date('2021-10-06T22:00:00.000Z'),
+        description: '20€ de réduction sur tout le catalogue'
+      }
+      ];
+
+    fixture.detectChanges();
+    const elements = fixture.debugElement.nativeElement.querySelectorAll('ion-label');
+    expect(elements.length).toBe(2);
+    expect(elements[0].getElementsByTagName('h2')[0].textContent).toEqual('Pour un super client 50% sur le catalogue');
+    expect(elements[0].getElementsByTagName('p')[0].textContent).toEqual('SUPER50 Date limite : 09/09/2020');
+    expect(elements[1].getElementsByTagName('h2')[0].textContent).toEqual('20€ de réduction sur tout le catalogue');
+    expect(elements[1].getElementsByTagName('p')[0].textContent).toEqual('KADO20 Date limite : 07/10/2021');
   });
 });
