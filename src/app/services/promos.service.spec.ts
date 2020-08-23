@@ -8,6 +8,8 @@ import {Promotion} from '../models/Promotion';
 
 // let httpServiceSpy: jasmine.SpyObj<HttpClient>;
 describe('PromosService', () => {
+    let promosService: PromosService;
+    let httpTestingController: HttpTestingController;
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
@@ -16,10 +18,8 @@ describe('PromosService', () => {
             .compileComponents();
     }));
 
-    let promosService: PromosService;
     beforeEach(() => promosService = TestBed.get(PromosService));
 
-    let httpTestingController: HttpTestingController;
     beforeEach(() => httpTestingController = TestBed.get(HttpTestingController));
 
     afterEach(() => {

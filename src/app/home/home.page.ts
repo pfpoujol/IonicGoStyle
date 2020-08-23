@@ -12,6 +12,7 @@ import * as moment from 'moment';
 import {ToastController} from '@ionic/angular';
 import {AlertController} from '@ionic/angular';
 import {HttpErrorResponse} from '@angular/common/http';
+import {UserService} from '../services/user.service';
 
 
 @Component({
@@ -29,11 +30,11 @@ export class HomePage implements OnInit, OnDestroy {
     itInit: boolean;
     promiseCompletUser: Promise<boolean>;
 
-    constructor(private afs: AngularFirestore,
-                private authService: AuthService,
+    constructor(private authService: AuthService,
                 private promosService: PromosService,
-                private barcodeScanner: BarcodeScanner,
-                private clipboard: Clipboard,
+                private userService: UserService,
+                // private barcodeScanner: BarcodeScanner,
+                // private clipboard: Clipboard,
                 public alertController: AlertController,
                 private toastController: ToastController) {
     }
@@ -45,11 +46,11 @@ export class HomePage implements OnInit, OnDestroy {
     ngOnInit() {
         this.promiseCompletUser = Promise.resolve(true);
         this.itInit = true;
-        this.authService.getPromisedUser().then(user => {
-            this.userId = user.uid;
-            return user;
-        }).then(user => {
-            this.initUserPromos(user.uid);
+        this.authService.getUid().then(uid => {
+            if (uid) {
+                this.userId = uid;
+                this.initUserPromos(uid);
+            }
         });
     }
 
@@ -57,7 +58,7 @@ export class HomePage implements OnInit, OnDestroy {
      * Affichage message de bienvenue, et chargement des promos si infos utilisateur completés.
      */
     initUserPromos(uid: string) {
-        this.subscriptions = this.afs.doc<UserFirestore>('users/' + uid).valueChanges().subscribe(action => {
+        this.subscriptions = this.userService.getUserDoc(uid).subscribe(action => {
             if (this.itInit && action !== undefined) {
                 this.presentToast(`<ion-icon name="happy"></ion-icon>   Bienvenue ${action.firstname} ${action.name} !`);
             }
@@ -92,7 +93,7 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     scanCode() {
-        this.barcodeScanner
+        /*this.barcodeScanner
             .scan()
             .then(barcodeData => {
                 if (!barcodeData.cancelled) {
@@ -115,7 +116,7 @@ export class HomePage implements OnInit, OnDestroy {
             })
             .catch(err => {
                 console.log('Error', err);
-            });
+            });*/
     }
 
     ngOnDestroy() {
@@ -128,8 +129,8 @@ export class HomePage implements OnInit, OnDestroy {
     }
 
     copyCode(index: number) {
-        this.clipboard.copy(this.promos[index].code).then(() =>
-            this.presentToast('<ion-icon name="copy"></ion-icon>   Code promo copié dans le press-papier', 'success'));
+        /*this.clipboard.copy(this.promos[index].code).then(() =>
+            this.presentToast('<ion-icon name="copy"></ion-icon>   Code promo copié dans le press-papier', 'success'));*/
     }
 
     async presentToast(message: string, color?: string) {
@@ -169,12 +170,10 @@ export class HomePage implements OnInit, OnDestroy {
                 }, {
                     text: 'Enregistrer',
                     handler: (data) => {
-                        if (data.name.trim() !== '' && data.firstname.trim() !== '') {
-                            this.promiseCompletUser = this.afs.doc<UserFirestore>('users/' + this.userId).set({
-                                name: data.name.trim(),
-                                firstname: data.firstname.trim(),
-                                ownedPromos: {}
-                            } as UserFirestore).then(() => true);
+                        const name = data.name.trim();
+                        const firstname = data.firstname.trim();
+                        if (name !== '' && firstname !== '') {
+                            this.promiseCompletUser = this.userService.updateUserDoc(this.userId, name, firstname).then(() => true);
                         } else {
                             this.presentAlertPrompt(this.userId);
                         }

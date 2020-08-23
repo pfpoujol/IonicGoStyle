@@ -49,6 +49,14 @@ export class AuthService {
     getPromisedUser(): Promise<firebase.User> {
         return this.afAuth.authState.pipe(first()).toPromise();
     }
+    getUid(): Promise<string | void> {
+        return this.afAuth.authState.pipe(first()).toPromise().then(user => {
+            return user.uid;
+        }).catch((error) => {
+            console.log(error.message);
+            this.navController.navigateRoot(['login']);
+        });
+    }
 }
 
 // https://www.positronx.io/full-angular-7-firebase-authentication-system/
