@@ -63,12 +63,12 @@ describe('HomePage', () => {
     component.promos = [
         {
       code: 'SUPER50',
-      dateExpiration: new Date('2020-09-08T22:00:00.000Z'),
+      dateExpiration: new Date('2020-09-09'),
       description: 'Pour un super client 50% sur le catalogue'
     },
       {
         code: 'KADO20',
-        dateExpiration: new Date('2021-10-06T22:00:00.000Z'),
+        dateExpiration: new Date('2021-10-07'),
         description: '20€ de réduction sur tout le catalogue'
       }
       ];
